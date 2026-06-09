@@ -1,0 +1,857 @@
+# MASTERWAY — FULL EXECUTION ROADMAP
+
+For
+
+This is your execution map from **zero → working MVP**.
+
+Your only job:
+
+* follow the steps,
+* don’t skip ahead,
+* don’t redesign mid-way,
+* finish one block before touching the next.
+
+---
+
+# PHASE 0 — PROJECT MINDSET  + done
+
+
+
+## Goal
+
+You are NOT building:
+
+* Udemy
+* Coursera
+* a billion-dollar startup
+
+You are building:
+
+> a functioning MVP that proves the concept.
+
+Success = working system.
+
+NOT perfection.
+
+---
+
+# PHASE 1 — PROJECT FOUNDATION   +Done
+
+## STEP 1 — Create Main Folder  + Done
+
+```bash
+mkdir masterway
+cd masterway
+```
+
+---
+
+## STEP 2 — Create Core Folders  + Done
+
+
+```bash
+mkdir backend
+mkdir frontend
+mkdir docs
+```
+
+Final structure:
+
+```txt
+masterway/
+│
+├── backend/
+├── frontend/
+└── docs/
+```
+
+---
+
+# PHASE 2 — DJANGO BACKEND SETUP  + Done
+
+Go inside backend:
+
+```bash
+cd backend
+```
+
+---
+
+## STEP 3 — Create Virtual Environment _Done
+
+### Windows
+
+```bash
+python -m venv venv
+```
+
+Activate:
+
+```bash
+venv\Scripts\activate
+```
+
+### Linux/macOS
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+---
+
+## STEP 4 — Install Dependencies  +Done
+
+```bash
+pip install django
+pip install djangorestframework
+pip install django-cors-headers
+pip install pillow
+pip install djangorestframework-simplejwt
+```
+
+Optional later:
+
+```bash
+pip install psycopg2-binary
+```
+
+---
+
+## STEP 5 — Save Requirements  +Done 
+
+```bash
+pip freeze > requirements.txt
+```
+
+---
+
+## STEP 6 — Create Django Project  +Done
+
+```bash
+django-admin startproject config .
+```
+
+---
+
+## STEP 7 — Run Server   + Done
+
+
+```bash
+python manage.py runserver
+```
+
+You must see:
+
+```txt
+Starting development server at http://127.0.0.1:8000/
+```
+
+ONLY continue after this works.
+
+---
+
+# PHASE 3 — CREATE DJANGO APPS   +done
+
+## STEP 8 — Create Apps   +Done
+
+```bash
+python manage.py startapp users
+python manage.py startapp rooms
+python manage.py startapp lessons
+python manage.py startapp progress
+python manage.py startapp community
+```
+
+---
+
+## STEP 9 — Register Apps   + Done
+
+Open:
+
+```txt
+config/settings.py
+```
+
+Add apps:
+
+```python
+INSTALLED_APPS = [
+    ...
+    'rest_framework',
+    'corsheaders',
+
+    'users',
+    'rooms',
+    'lessons',
+    'progress',
+    'community',
+]
+```
+
+---
+
+## STEP 10 — Add Middleware  + Done
+
+In `MIDDLEWARE`:
+
+```python
+'corsheaders.middleware.CorsMiddleware',
+```
+
+---
+
+## STEP 11 — Allow Frontend Access + Done
+
+Add:
+
+```python
+CORS_ALLOW_ALL_ORIGINS = True
+```
+
+---
+
+# PHASE 4 — CUSTOM USER SYSTEM + Done
+
+This is VERY IMPORTANT.
+
+Do this EARLY.
+
+---
+
+## STEP 12 — Create Custom User Model + DONE
+
+Open:
+
+```txt
+users/models.py
+```
+
+Create:
+
+```python
+from django.contrib.auth.models import AbstractUser
+from django.db import models
+
+class User(AbstractUser):
+
+    ROLE_CHOICES = (
+        ('expert', 'Expert'),
+        ('learner', 'Learner'),
+    )
+
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES)
+```
+
+---
+
+## STEP 13 — Tell Django To Use Custom User  + Done
+
+In `settings.py`:
+
+```python
+AUTH_USER_MODEL = 'users.User'
+```
+
+---
+
+## STEP 14 — Make Migrations  + Done
+
+```bash
+python manage.py makemigrations
+python manage.py migrate
+```
+
+---
+
+# PHASE 5 — ADMIN PANEL
+
+## STEP 15 — Create Superuser  + Done
+
+```bash
+python manage.py createsuperuser 
+```
+
+Enter:
+
+* username
+* email
+* password
+
+---
+
+## STEP 16 — Register User Model In Admin + Done
+
+Open:
+
+```txt
+users/admin.py
+```
+
+Add:
+
+```python
+from django.contrib import admin
+from .models import User
+
+admin.site.register(User)
+```
+
+---
+
+## STEP 17 — Test Admin   + Done
+
+Run server:
+
+```bash
+python manage.py runserver
+```
+
+Visit:
+
+```txt
+http://127.0.0.1:8000/admin
+```
+
+Login.
+
+You should see Users.
+
+---
+
+# PHASE 6 — ROOM SYSTEM  + Done
+
+---
+
+## STEP 18 — Create Room Model  + Done
+
+Open:
+
+```txt
+rooms/models.py
+```
+
+Create:
+
+```python
+from django.db import models
+from django.conf import settings
+
+class Room(models.Model):
+
+    creator = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+
+    title = models.CharField(max_length=255)
+
+    description = models.TextField()
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
+```
+
+---
+
+## STEP 19 — Migrate  + Done
+
+```bash
+python manage.py makemigrations
+python manage.py migrate
+```
+
+---
+
+## STEP 20 — Register In Admin  + Done
+
+```python
+from django.contrib import admin
+from .models import Room
+
+admin.site.register(Room)
+```
+
+---
+
+# PHASE 7 — LESSON SYSTEM  + Done
+
+---
+
+## STEP 21 — Create Lesson Model + Done
+
+Open:
+
+```txt
+lessons/models.py
+```
+
+Add:
+
+```python
+from django.db import models
+from rooms.models import Room
+
+class Lesson(models.Model):
+
+    room = models.ForeignKey(Room, on_delete=models.CASCADE)
+
+    title = models.CharField(max_length=255)
+
+    content = models.TextField()
+
+    order = models.IntegerField(default=0)
+
+    def __str__(self):
+        return self.title
+```
+
+---
+
+## STEP 22 — Migrate  + Done
+
+```bash
+python manage.py makemigrations
+python manage.py migrate
+```
+
+---
+
+# PHASE 8 — ENROLLMENT & PROGRESS + Done
+
+---
+
+## STEP 23 — Create Enrollment Model + Done
+
+Open:
+
+```txt
+progress/models.py
+```
+
+Add:
+
+```python
+from django.db import models
+from django.conf import settings
+from rooms.models import Room
+
+class Enrollment(models.Model):
+
+    learner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+
+    room = models.ForeignKey(
+        Room,
+        on_delete=models.CASCADE
+    )
+
+    joined_at = models.DateTimeField(auto_now_add=True)
+```
+
+---
+
+## STEP 24 — Create Lesson Progress Model + Done
+
+```python
+class LessonProgress(models.Model):
+
+    learner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+
+    lesson = models.ForeignKey(
+        'lessons.Lesson',
+        on_delete=models.CASCADE
+    )
+
+    completed = models.BooleanField(default=False)
+```
+
+---
+
+## STEP 25 — Migrate + Done
+
+```bash
+python manage.py makemigrations
+python manage.py migrate
+```
+
+---
+
+# PHASE 9 — COMMUNITY SYSTEM + Done
+
+---
+
+## STEP 26 — Create Comment Model + Done
+
+Open:
+
+```txt
+community/models.py
+```
+
+Add:
+
+```python
+from django.db import models
+from django.conf import settings
+from rooms.models import Room
+
+class Comment(models.Model):
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+
+    room = models.ForeignKey(
+        Room,
+        on_delete=models.CASCADE
+    )
+
+    text = models.TextField()
+
+    created_at = models.DateTimeField(auto_now_add=True)
+```
+
+---
+
+## STEP 27 — Migrate  + Done
+
+```bash
+python manage.py makemigrations
+python manage.py migrate
+```
+
+---
+
+# PHASE 10 — DJANGO REST FRAMEWORK 
+
+Now backend becomes an API.
+
+---
+
+## STEP 28 — Create Serializers + Done
+
+Each app gets:
+
+* serializers.py
+
+Example:
+
+```txt
+rooms/serializers.py
+```
+
+---
+
+## STEP 29 — Create Room Serializer + Done
+
+```python
+from rest_framework import serializers
+from .models import Room
+
+class RoomSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Room
+        fields = '__all__'
+```
+
+---
+
+# PHASE 11 — CREATE API VIEWS + done
+
+---Ho
+
+## STEP 30 — Create Views + done
+
+Example:
+
+```txt
+rooms/views.py
+```
+
+Use:
+
+* ListAPIView
+* CreateAPIView
+* RetrieveAPIView
+
+Later:
+
+* ViewSets
+
+---
+
+# PHASE 12 — URLS + done
+
+---
+
+## STEP 31 — Create App URLs + done
+
+```txt
+rooms/urls.py
+```
+
+---
+
+## STEP 32 — Connect To Main URLs + done
+
+Open:
+
+```txt
+config/urls.py
+```
+
+Add:
+
+```python
+path('api/rooms/', include('rooms.urls'))
+```
+
+---
+
+# PHASE 13 — JWT AUTHENTICATION + done
+
+---
+
+## STEP 33 — Configure JWT  
+
+Use:
+
+* SimpleJWT
+
+---
+
+## STEP 34 — Login Endpoint
+
+Endpoints:
+
+* register
+* login
+* refresh token
+
+---
+
+# PHASE 14 — TESTING API
+
+---
+
+## STEP 35 — Install Postman
+
+Test:
+
+* register
+* login
+* create room
+* list rooms
+
+---
+
+# PHASE 15 — FRONTEND SETUP
+
+Now React.
+
+---
+
+## STEP 36 — Go Back To Root
+
+```bash
+cd ..
+```
+
+---
+
+## STEP 37 — Create React App
+
+```bash
+npm create vite@latest frontend
+```
+
+Choose:
+
+* React
+* JavaScript
+
+---
+
+## STEP 38 — Install Frontend Packages
+
+```bash
+npm install
+npm install axios
+npm install react-router-dom
+npm install tailwindcss
+```
+
+---
+
+## STEP 39 — Start Frontend
+
+```bash
+npm run dev
+```
+
+---
+
+# PHASE 16 — FRONTEND STRUCTURE
+
+Create folders:
+
+```txt
+src/
+│
+├── pages/
+├── components/
+├── services/
+├── layouts/
+├── context/
+└── routes/
+```
+
+---
+
+# PHASE 17 — AUTH PAGES
+
+Build:
+
+* Login page
+* Register page
+
+---
+
+# PHASE 18 — ROOM PAGES
+
+Build:
+
+* room list
+* room detail
+* create room
+
+---
+
+# PHASE 19 — LESSON PAGES
+
+Build:
+
+* lesson list
+* lesson detail
+
+---
+
+# PHASE 20 — PROGRESS SYSTEM
+
+Build:
+
+* mark complete button
+* progress percentage
+* progress bar
+
+---
+
+# PHASE 21 — COMMUNITY
+
+Build:
+
+* comments
+* discussions
+
+---
+
+# PHASE 22 — UI IMPROVEMENT
+
+Use:
+
+* TailwindCSS
+* responsive design
+
+---
+
+# PHASE 23 — TEST EVERYTHING
+
+Test:
+
+* registration
+* login
+* room creation
+* enrollment
+* lesson progress
+* comments
+
+---
+
+# PHASE 24 — DEPLOYMENT
+
+Backend:
+
+* Render
+* Railway
+
+Frontend:
+
+* Vercel
+
+Database later:
+
+* PostgreSQL
+
+---
+
+# PHASE 25 — FINAL MVP DEMO
+
+Your MVP demo should show:
+
+✅ User login
+✅ Expert creates room
+✅ Learner joins room
+✅ Lessons visible
+✅ Progress tracking
+✅ Community comments
+
+That is enough for:
+
+* school project,
+* pilot test,
+* accountability proof,
+* portfolio,
+* internship applications,
+* startup validation.
+
+---
+
+# YOUR EXECUTION RULES
+
+## Rule 1
+
+Never jump ahead.
+
+---
+
+## Rule 2
+
+Never redesign before finishing MVP.
+
+---
+
+## Rule 3
+
+Complete backend BEFORE fancy frontend.
+
+---
+
+## Rule 4
+
+Every day must produce:
+
+* code,
+* commit,
+* screenshot,
+* or feature.
+* custom user model.

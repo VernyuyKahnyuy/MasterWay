@@ -1,0 +1,22 @@
+# --- Backend (Django) Rules ---
+backend/venv/
+backend/old_venv/
+backend/.venv/
+backend/__pycache__/
+backend/*.pyc
+backend/db.sqlite3
+backend/.env
+
+
+# --- Frontend (React) Rules ---
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.eslintcache
+frontend/.env.local
+frontend/.env.development.local
+
+
+# --- OS/System Garbage ---
+.DS_Store
+Thumbs.db
