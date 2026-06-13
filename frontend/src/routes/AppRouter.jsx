@@ -4,6 +4,8 @@ import LoginPage from "../pages/LoginPage";
 import RegisterPage from "../pages/RegisterPage";
 import RoomListPage from "../pages/RoomListPage";
 import RoomDetailPage from "../pages/RoomDetailPage";
+import LessonDetailPage from "../pages/LessonDetailPage";
+import RecommendationsPage from "../pages/RecommendationPage";
 
 function AppRouter() {
   return (
@@ -16,6 +18,10 @@ function AppRouter() {
         <Route path="/register" element={<RegisterPage />} />
 
         <Route path="/rooms/:id" element={<RoomDetailPage />} />
+
+        <Route path="/lessons/:id" element={<LessonDetailPage />} />
+
+        <Route path="/recommendations" element={<RecommendationsPage />} />
 
       </Routes>
   );

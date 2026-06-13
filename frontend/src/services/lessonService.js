@@ -6,3 +6,10 @@ export const getLessonsByRoom = async (roomId) => {
     );
     return response.data;
 };
+
+export const getLesson = async (id) => {
+    const response = await api.get(
+        `lessons/${id}/`
+    );
+    return response.data;
+};

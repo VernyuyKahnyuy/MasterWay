@@ -21,6 +21,13 @@ function Navbar() {
         Register
       </Link>
 
+      {" | "}
+      
+      <Link to="/recommendations">
+        Recommendations
+      </Link>
+
+
     </nav>
   );
 }

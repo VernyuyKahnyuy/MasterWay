@@ -40,7 +40,10 @@ function RoomListPage() {
             <Link to={`/rooms/${room.id}`}>
               {room.title}
             </Link>
-          </h3>
+          </h3> 
+          <p> Created by: {room.creator_username} </p>
+          <p>Created: {new Date(room.created_at).toLocaleDateString()} </p>
+
 
           <p>{room.description}</p>
 

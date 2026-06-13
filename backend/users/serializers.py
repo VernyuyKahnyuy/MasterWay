@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User
+from .models import User, UserInterest
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only = True)
@@ -23,3 +23,16 @@ class RegisterSerializer(serializers.ModelSerializer):
         )
 
         return user
+    
+class UserInterestSerializer(
+    serializers.ModelSerializer
+):
+    class Meta:
+        model = UserInterest
+
+        fields = [
+            "id", 
+            "interest",
+            "created_at", 
+            
+        ]
