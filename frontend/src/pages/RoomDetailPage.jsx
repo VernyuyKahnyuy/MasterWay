@@ -6,8 +6,7 @@ import { enrollInRoom } from "../services/enrollmentService";
 import { getCommentsByRoom, createComment } from "../services/commentService";
 import { formatDate } from "../utils/dateFormatter";
 import { getCurrentUserId } from "../utils/auth";
-import { createUpdate } from "../services/accountabilityService";
-import { getRoomUpdates } from "../services/accountabilityService";
+import { createUpdate, getRoomUpdates } from "../services/accountabilityService";
 
 function RoomDetailPage() {
   const { id } = useParams();
@@ -21,20 +20,25 @@ function RoomDetailPage() {
   const [postingComment, setPostingComment] = useState(false);
   const [updates, setUpdates] = useState([]);
   const [updateContent, setUpdateContent] = useState("");
+  const [postingUpdate, setPostingUpdate] = useState(false);
 
   useEffect(() => {
     const fetchRoom = async () => {
+      console.log(`[RoomDetailPage] Loading room ${id}`);
       try {
         const roomData = await getRoom(id);
         setRoom(roomData);
-        const lessonData = await getLessonsByRoom(id);
+        const [lessonData, commentData, updateData] = await Promise.all([
+          getLessonsByRoom(id),
+          getCommentsByRoom(id),
+          getRoomUpdates(id),
+        ]);
         setLessons(lessonData);
-        const commentData = await getCommentsByRoom(id);
         setComments(commentData);
-        const updateData = await getRoomUpdates(id);
         setUpdates(updateData);
+        console.log(`[RoomDetailPage] Loaded ${lessonData.length} lessons, ${commentData.length} comments, ${updateData.length} updates`);
       } catch (error) {
-        console.error(error);
+        console.error("[RoomDetailPage] Failed to load room data:", error);
       }
     };
     fetchRoom();
@@ -45,8 +49,9 @@ function RoomDetailPage() {
     try {
       await enrollInRoom(id);
       setEnrolled(true);
+      console.log(`[RoomDetailPage] Enrolled in room ${id}`);
     } catch (error) {
-      console.error(error);
+      console.error("[RoomDetailPage] Enrollment failed:", error);
     } finally {
       setEnrolling(false);
     }
@@ -61,7 +66,7 @@ function RoomDetailPage() {
       setComments(updatedComments);
       setCommentText("");
     } catch (error) {
-      console.error(error);
+      console.error("[RoomDetailPage] Failed to post comment:", error);
     } finally {
       setPostingComment(false);
     }
@@ -69,20 +74,20 @@ function RoomDetailPage() {
 
   const handleUpdateSubmit = async (e) => {
     e.preventDefault();
-
-    console.log("SUBMIT CLICKED");
-
-    await createUpdate({
-      room: id,
-
-      content: updateContent,
-    });
-
-    const refreshed = await getRoomUpdates(id);
-
-    setUpdates(refreshed);
-
-    setUpdateContent("");
+    if (!updateContent.trim()) return;
+    setPostingUpdate(true);
+    console.log(`[RoomDetailPage] Posting accountability update for room ${id}`);
+    try {
+      await createUpdate({ room: id, content: updateContent });
+      const refreshed = await getRoomUpdates(id);
+      setUpdates(refreshed);
+      setUpdateContent("");
+      console.log(`[RoomDetailPage] Accountability update posted successfully`);
+    } catch (error) {
+      console.error("[RoomDetailPage] Failed to post update:", error);
+    } finally {
+      setPostingUpdate(false);
+    }
   };
 
   if (!room) {
@@ -98,6 +103,16 @@ function RoomDetailPage() {
 
   return (
     <div>
+      {/* Back navigation */}
+      <div className="px-6 pt-5">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-violet-700 font-medium transition-colors"
+        >
+          ← Back to Rooms
+        </Link>
+      </div>
+
       {/* Cover */}
       {room.cover_image ? (
         <img
@@ -112,7 +127,19 @@ function RoomDetailPage() {
       <div className="px-6 py-8">
         <div className="flex items-start justify-between gap-4 mb-2">
           <h1 className="text-3xl font-bold text-gray-900">{room.title}</h1>
-          {enrolled ? (
+          {currentUserId === room.creator ? (
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="bg-violet-100 text-violet-700 text-sm font-semibold px-4 py-2 rounded-lg">
+                Owned by you
+              </span>
+              <Link
+                to={`/expert/room/${id}`}
+                className="bg-violet-600 hover:bg-violet-700 text-white font-semibold px-5 py-2.5 rounded-lg transition-colors text-sm"
+              >
+                Edit Room
+              </Link>
+            </div>
+          ) : enrolled ? (
             <span className="shrink-0 bg-green-100 text-green-700 text-sm font-semibold px-4 py-2 rounded-lg">
               ✓ Enrolled
             </span>
@@ -129,12 +156,14 @@ function RoomDetailPage() {
 
         <p className="text-gray-500 mb-2">{room.description}</p>
 
-        <Link
-          to={`/messages/send/${room.creator}`}
-          className="inline-flex items-center gap-1.5 text-sm text-violet-600 hover:text-violet-700 font-medium mb-8"
-        >
-          ✉️ Message Expert
-        </Link>
+        {currentUserId !== room.creator && (
+          <Link
+            to={`/messages/send/${room.creator}`}
+            className="inline-flex items-center gap-1.5 text-sm text-violet-600 hover:text-violet-700 font-medium mb-8"
+          >
+            ✉️ Message Expert
+          </Link>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Lessons */}
@@ -164,67 +193,101 @@ function RoomDetailPage() {
             ) : (
               <div className="space-y-3">
                 {lessons.map((lesson, idx) => (
-                  <Link
+                  <div
                     key={lesson.id}
-                    to={`/lessons/${lesson.id}`}
-                    className="flex items-center gap-4 bg-white border border-gray-100 rounded-xl p-4 hover:border-violet-200 hover:shadow-sm transition-all group"
+                    className="group flex items-center bg-white border border-gray-100 rounded-xl hover:border-violet-200 hover:shadow-sm transition-all overflow-hidden"
                   >
-                    <span className="w-8 h-8 rounded-full bg-violet-100 text-violet-700 font-semibold text-sm flex items-center justify-center shrink-0">
-                      {idx + 1}
-                    </span>
-                    <div className="flex-1 text-left">
-                      <p className="font-medium text-gray-900 group-hover:text-violet-700 transition-colors">
-                        {lesson.title}
-                      </p>
-                      {lesson.content && (
-                        <p className="text-sm text-gray-400 mt-0.5 line-clamp-1">
-                          {lesson.content}
+                    <Link
+                      to={`/lessons/${lesson.id}`}
+                      className="flex items-center gap-4 flex-1 p-4"
+                    >
+                      <span className="w-8 h-8 rounded-full bg-violet-100 text-violet-700 font-semibold text-sm flex items-center justify-center shrink-0">
+                        {idx + 1}
+                      </span>
+                      <div className="flex-1 text-left">
+                        <p className="font-medium text-gray-900 group-hover:text-violet-700 transition-colors">
+                          {lesson.title}
                         </p>
-                      )}
-                    </div>
-                    <span className="text-gray-300 group-hover:text-violet-400 transition-colors">
-                      →
-                    </span>
-                  </Link>
+                        {lesson.content && (
+                          <p className="text-sm text-gray-400 mt-0.5 line-clamp-1">
+                            {lesson.content}
+                          </p>
+                        )}
+                      </div>
+                      <span className="text-gray-300 group-hover:text-violet-400 transition-colors">
+                        →
+                      </span>
+                    </Link>
+                    {lesson.creator === currentUserId && (
+                      <Link
+                        to={`/expert/lesson/${lesson.id}/edit`}
+                        className="shrink-0 mr-4 text-xs bg-violet-50 hover:bg-violet-100 text-violet-700 font-semibold px-3 py-1.5 rounded-lg transition-colors"
+                      >
+                        Edit
+                      </Link>
+                    )}
+                  </div>
                 ))}
               </div>
             )}
           </div>
 
-          {/* accountability circle */}
-          <h2>Accountability Circle</h2>
+          {/* Accountability Circle */}
+          <div className="lg:col-span-1">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              Accountability Circle
+            </h2>
 
-          <form onSubmit={handleUpdateSubmit}>
-            <textarea
-              value={updateContent}
-              onChange={(e) => setUpdateContent(e.target.value)}
-              placeholder="Share your learning progress..."
-            />
-
-            <button
-              onClick={handleUpdateSubmit}
-              className="mt-2 w-full bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium py-2 rounded-lg transition-colors disabled:opacity-50"
-            >
-              Post Update
-            </button>
-          </form>
-
-          {updates.map((update) => (
-            <div key={update.id}>
-              <Link to={`/profiles/${update.user}`}>
-                <h4>{update.username}</h4>
-              </Link>
-
-              <p>{update.content}</p>
-
-              <small>{new Date(update.created_at).toLocaleString()}</small>
-
-              <hr />
+            <div className="bg-gray-50 rounded-xl border border-gray-100 p-4 mb-4">
+              <form onSubmit={handleUpdateSubmit}>
+                <textarea
+                  value={updateContent}
+                  onChange={(e) => setUpdateContent(e.target.value)}
+                  placeholder="Share your learning progress..."
+                  rows={3}
+                  className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none transition"
+                />
+                <button
+                  type="submit"
+                  disabled={postingUpdate || !updateContent.trim()}
+                  className="mt-2 w-full bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium py-2 rounded-lg transition-colors disabled:opacity-50"
+                >
+                  {postingUpdate ? "Posting..." : "Post Update"}
+                </button>
+              </form>
             </div>
-          ))}
 
-          {/* Discussion */}
-          <div>
+            {updates.length === 0 ? (
+              <p className="text-sm text-gray-400 text-center py-4">
+                No updates yet. Be the first to share your progress!
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {updates.map((update) => (
+                  <div
+                    key={update.id}
+                    className="bg-white rounded-xl border border-gray-100 p-4"
+                  >
+                    <div className="flex items-center justify-between mb-1.5">
+                      <Link
+                        to={`/profiles/${update.user}`}
+                        className="text-sm font-semibold text-violet-700 hover:text-violet-800"
+                      >
+                        {update.username}
+                      </Link>
+                      <span className="text-xs text-gray-400">
+                        {new Date(update.created_at).toLocaleString()}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600">{update.content}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Discussion — full width below lessons and accountability */}
+          <div className="lg:col-span-3">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">
               Discussion
             </h2>

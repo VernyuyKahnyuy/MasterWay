@@ -11,16 +11,19 @@ function LearnerDashboardPage() {
 
   useEffect(() => {
     const fetchData = async () => {
+      console.log("[LearnerDashboard] Loading dashboard data");
       try {
-        const data = await getProgress();
-        const continueData = await getContinueLearning();
-        const learners = await getSimilarLearners();
-
-        setSimilarLearners(learners);
-        setContinueLearning(continueData);
+        const [data, continueData, learners] = await Promise.all([
+          getProgress(),
+          getContinueLearning(),
+          getSimilarLearners(),
+        ]);
         setProgress(data);
+        setContinueLearning(continueData);
+        setSimilarLearners(learners);
+        console.log(`[LearnerDashboard] Loaded: ${data.length} completed lessons, ${learners.length} similar learners`);
       } catch (error) {
-        console.error(error);
+        console.error("[LearnerDashboard] Failed to load dashboard data:", error);
       } finally {
         setLoading(false);
       }
@@ -131,26 +134,51 @@ function LearnerDashboardPage() {
         </div>
 
         <div>
-          <h2>People With Similar Interests</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            People With Similar Interests
+          </h2>
 
           {similarLearners.length > 0 ? (
-            similarLearners.map((learner) => (
-              <div key={learner.id}>
-                <h4>{learner.username}</h4>
-
-                <p>{learner.interests}</p>
-
-                {/* shared interests */}
-                <p>
-                  Shared interests:
-                  {learner.shared_interests}
-                </p>
-
-                <Link to={`/profiles/${learner.user}`}>View Profile</Link>
-              </div>
-            ))
+            <div className="space-y-3">
+              {similarLearners.map((learner) => (
+                <div
+                  key={learner.id}
+                  className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-8 h-8 rounded-full bg-violet-100 text-violet-700 font-semibold text-sm flex items-center justify-center shrink-0">
+                        {learner.username?.[0]?.toUpperCase() ?? "?"}
+                      </span>
+                      <h4 className="font-semibold text-gray-900 text-sm">
+                        {learner.username}
+                      </h4>
+                    </div>
+                    <Link
+                      to={`/profiles/${learner.user}`}
+                      className="text-xs text-violet-600 hover:text-violet-700 font-medium"
+                    >
+                      View Profile →
+                    </Link>
+                  </div>
+                  {learner.interests && (
+                    <p className="text-xs text-gray-500 mb-1 line-clamp-1">
+                      {learner.interests}
+                    </p>
+                  )}
+                  {learner.shared_interests && (
+                    <p className="text-xs text-violet-600 font-medium">
+                      Shared: {learner.shared_interests}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
           ) : (
-            <p>No similar learners found.</p>
+            <div className="bg-gray-50 border border-gray-100 rounded-2xl p-8 text-center">
+              <p className="text-3xl mb-2">👥</p>
+              <p className="text-gray-500 text-sm">No similar learners found yet.</p>
+            </div>
           )}
         </div>
 

@@ -1,11 +1,15 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { getLesson } from "../services/lessonService";
 import { markLessonComplete } from "../services/progressService";
 import { generateSummary, generateQuiz } from "../services/aiService";
+import { getCurrentUserId } from "../utils/auth";
+import MarkdownText from "../components/MarkdownText";
 
 function LessonDetailPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const currentUserId = getCurrentUserId();
   const [lesson, setLesson] = useState(null);
   const [completed, setCompleted] = useState(false);
   const [summary, setSummary] = useState("");
@@ -16,11 +20,13 @@ function LessonDetailPage() {
 
   useEffect(() => {
     const fetchLesson = async () => {
+      console.log(`[LessonDetailPage] Loading lesson ${id}`);
       try {
         const data = await getLesson(id);
         setLesson(data);
+        console.log(`[LessonDetailPage] Loaded lesson: "${data.title}"`);
       } catch (error) {
-        console.error(error);
+        console.error("[LessonDetailPage] Failed to load lesson:", error);
       }
     };
     fetchLesson();
@@ -31,8 +37,9 @@ function LessonDetailPage() {
     try {
       await markLessonComplete(id);
       setCompleted(true);
+      console.log(`[LessonDetailPage] Lesson ${id} marked complete`);
     } catch (error) {
-      console.error(error);
+      console.error("[LessonDetailPage] Failed to mark lesson complete:", error);
     } finally {
       setMarking(false);
     }
@@ -40,11 +47,13 @@ function LessonDetailPage() {
 
   const handleSummary = async () => {
     setLoadingSummary(true);
+    console.log(`[LessonDetailPage] Generating AI summary for lesson ${id}`);
     try {
       const data = await generateSummary(id);
       setSummary(data.summary);
+      console.log("[LessonDetailPage] Summary generated successfully");
     } catch (error) {
-      console.error(error);
+      console.error("[LessonDetailPage] Failed to generate summary:", error);
     } finally {
       setLoadingSummary(false);
     }
@@ -52,11 +61,13 @@ function LessonDetailPage() {
 
   const handleQuiz = async () => {
     setLoadingQuiz(true);
+    console.log(`[LessonDetailPage] Generating AI quiz for lesson ${id}`);
     try {
       const data = await generateQuiz(id);
       setQuiz(data.quiz);
+      console.log("[LessonDetailPage] Quiz generated successfully");
     } catch (error) {
-      console.error(error);
+      console.error("[LessonDetailPage] Failed to generate quiz:", error);
     } finally {
       setLoadingQuiz(false);
     }
@@ -80,29 +91,53 @@ function LessonDetailPage() {
 
   return (
     <div className="px-6 py-8 max-w-3xl mx-auto">
+      {/* Back navigation */}
+      <button
+        onClick={() => navigate(-1)}
+        className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-violet-700 font-medium transition-colors mb-6"
+      >
+        ← Back
+      </button>
+
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-3">{lesson.title}</h1>
-        <div className="flex items-center gap-3">
-          {completed ? (
-            <span className="inline-flex items-center gap-1.5 bg-green-100 text-green-700 text-sm font-semibold px-3 py-1.5 rounded-full">
-              ✓ Completed
-            </span>
+        <div className="flex items-center gap-3 flex-wrap">
+          {currentUserId === lesson.creator ? (
+            <>
+              <span className="inline-flex items-center gap-1.5 bg-violet-100 text-violet-700 text-sm font-semibold px-3 py-1.5 rounded-full">
+                Owned by you
+              </span>
+              <Link
+                to={`/expert/lesson/${id}/edit`}
+                className="inline-flex items-center gap-1.5 bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold px-4 py-2 rounded-full transition-colors"
+              >
+                Edit Lesson
+              </Link>
+            </>
           ) : (
-            <button
-              onClick={handleComplete}
-              disabled={marking}
-              className="inline-flex items-center gap-1.5 bg-green-50 hover:bg-green-100 text-green-700 text-sm font-semibold px-4 py-2 rounded-full border border-green-200 transition-colors disabled:opacity-60"
-            >
-              {marking ? "Marking..." : "✓ Mark Complete"}
-            </button>
+            <>
+              {completed ? (
+                <span className="inline-flex items-center gap-1.5 bg-green-100 text-green-700 text-sm font-semibold px-3 py-1.5 rounded-full">
+                  ✓ Completed
+                </span>
+              ) : (
+                <button
+                  onClick={handleComplete}
+                  disabled={marking}
+                  className="inline-flex items-center gap-1.5 bg-green-50 hover:bg-green-100 text-green-700 text-sm font-semibold px-4 py-2 rounded-full border border-green-200 transition-colors disabled:opacity-60"
+                >
+                  {marking ? "Marking..." : "✓ Mark Complete"}
+                </button>
+              )}
+              <Link
+                to={`/messages/send/${lesson.creator}`}
+                className="text-sm text-violet-600 hover:text-violet-700 font-medium"
+              >
+                ✉️ Message Expert
+              </Link>
+            </>
           )}
-          <Link
-            to={`/messages/send/${lesson.creator}`}
-            className="text-sm text-violet-600 hover:text-violet-700 font-medium"
-          >
-            ✉️ Message Expert
-          </Link>
         </div>
       </div>
 
@@ -215,10 +250,10 @@ function LessonDetailPage() {
         {/* Summary Result */}
         {summary && (
           <div className="mt-5 bg-white rounded-xl border border-violet-100 p-4">
-            <h3 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+            <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
               ✨ Summary
             </h3>
-            <p className="text-gray-600 text-sm leading-relaxed">{summary}</p>
+            <MarkdownText text={summary} />
           </div>
         )}
 
@@ -228,31 +263,7 @@ function LessonDetailPage() {
             <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
               🧠 Quiz
             </h3>
-            <div className="space-y-4">
-              {Array.isArray(quiz) ? (
-                quiz.map((q, idx) => (
-                  <div key={idx} className="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
-                    <p className="font-medium text-gray-800 text-sm mb-2">
-                      {idx + 1}. {q.question}
-                    </p>
-                    {q.options && (
-                      <ul className="space-y-1">
-                        {q.options.map((opt, oi) => (
-                          <li key={oi} className="text-sm text-gray-600 flex gap-2">
-                            <span className="text-gray-400">{String.fromCharCode(65 + oi)}.</span>
-                            {opt}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                ))
-              ) : (
-                <pre className="text-xs text-gray-600 whitespace-pre-wrap font-mono">
-                  {JSON.stringify(quiz, null, 2)}
-                </pre>
-              )}
-            </div>
+            <MarkdownText text={typeof quiz === "string" ? quiz : JSON.stringify(quiz, null, 2)} />
           </div>
         )}
       </div>

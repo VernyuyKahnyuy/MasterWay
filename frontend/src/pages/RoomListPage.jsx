@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { getRooms } from "../services/roomService";
 import { getCurrentUserId } from "../utils/auth";
 
 function RoomListPage() {
   const currentUserId = getCurrentUserId();
+  const navigate = useNavigate();
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -84,47 +85,63 @@ function RoomListPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map((room) => (
-            <Link
-              key={room.id}
-              to={`/rooms/${room.id}`}
-              className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-violet-100 transition-all overflow-hidden"
-            >
-              {room.cover_image ? (
-                <img
-                  src={room.cover_image}
-                  alt={room.title}
-                  className="w-full h-36 object-cover"
-                />
-              ) : (
-                <div className="w-full h-36 bg-gradient-to-br from-violet-100 to-violet-200 flex items-center justify-center text-4xl">
-                  📖
-                </div>
-              )}
-              <div className="p-5">
-                <h3 className="font-semibold text-gray-900 group-hover:text-violet-700 transition-colors line-clamp-1">
-                  {room.title}
-                </h3>
-                <p className="text-sm text-gray-500 mt-1 line-clamp-2">
-                  {room.description}
-                </p>
-                <div className="flex items-center justify-between mt-4">
-                  <span className="text-xs text-gray-400">
-                    by{" "}
-                    <span className="text-violet-600 font-medium">
-                      {room.creator_username}
+          {filtered.map((room) => {
+            const isOwner = room.creator === currentUserId;
+            return (
+              <div
+                key={room.id}
+                onClick={() => navigate(`/rooms/${room.id}`)}
+                className="group relative bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-violet-100 transition-all overflow-hidden cursor-pointer"
+              >
+                {isOwner && (
+                  <span className="absolute top-2.5 left-2.5 z-10 bg-violet-600 text-white text-xs font-semibold px-2.5 py-1 rounded-full">
+                    Owned by you
+                  </span>
+                )}
+                {room.cover_image ? (
+                  <img
+                    src={room.cover_image}
+                    alt={room.title}
+                    className="w-full h-36 object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-36 bg-gradient-to-br from-violet-100 to-violet-200 flex items-center justify-center text-4xl">
+                    📖
+                  </div>
+                )}
+                <div className="p-5">
+                  <h3 className="font-semibold text-gray-900 group-hover:text-violet-700 transition-colors line-clamp-1">
+                    {room.title}
+                  </h3>
+                  <p className="text-sm text-gray-500 mt-1 line-clamp-2">
+                    {room.description}
+                  </p>
+                  <div className="flex items-center justify-between mt-4">
+                    <span className="text-xs text-gray-400">
+                      by{" "}
+                      <span className="text-violet-600 font-medium">
+                        {room.creator_username}
+                      </span>
                     </span>
-                    {room.creator === currentUserId && (
-                      <span className="ml-1 text-violet-400">(you)</span>
-                    )}
-                  </span>
-                  <span className="text-xs text-gray-400">
-                    {new Date(room.created_at).toLocaleDateString()}
-                  </span>
+                    <div className="flex items-center gap-2">
+                      {isOwner && (
+                        <Link
+                          to={`/expert/room/${room.id}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="text-xs bg-violet-50 hover:bg-violet-100 text-violet-700 font-semibold px-3 py-1.5 rounded-lg transition-colors"
+                        >
+                          Edit
+                        </Link>
+                      )}
+                      <span className="text-xs text-gray-400">
+                        {new Date(room.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </Link>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

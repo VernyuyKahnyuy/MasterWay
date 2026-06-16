@@ -55,50 +55,37 @@ class RoomRecommendationView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        
-        interests = (
-        UserInterest.objects
-        .filter(user=request.user)
-        .order_by('-created_at')[:5]
-        .first())
+        from progress.models import Enrollment
 
-        if not interests:
-            print("You have no interests as of now")
+        interest_values = list(
+            UserInterest.objects.filter(user=request.user).values_list('interest', flat=True)
+        )
+
+        if not interest_values:
             return Response({'error': 'No interests.'}, status=status.HTTP_404_NOT_FOUND)
-        
+
+        enrolled_room_ids = set(
+            Enrollment.objects.filter(learner=request.user).values_list('room_id', flat=True)
+        )
+
         rooms = Room.objects.all()
 
-        recommendations = (
-            recommend_rooms( 
-                interests.interest, 
-                rooms
-            )
+        recommended_ids = recommend_rooms(
+            user=request.user,
+            interests=interest_values,
+            rooms=rooms,
+            enrolled_room_ids=enrolled_room_ids,
         )
 
-        if not recommendations:
-            
-            return Response({
-                "rooms" : []
-            })
+        if not recommended_ids:
+            return Response({'rooms': []})
 
-        room_ids = [
-            int(id.strip()) 
-            for id in recommendations.split(',') 
-            if id.strip().isdigit()]
-        
-        recommended_rooms = Room.objects.filter(id__in=room_ids)
+        room_map = {room.id: room for room in Room.objects.filter(id__in=recommended_ids)}
+        data = [
+            {'id': room_map[rid].id, 'title': room_map[rid].title, 'description': room_map[rid].description}
+            for rid in recommended_ids
+            if rid in room_map
+        ]
 
-        data = []
-
-        for room in recommended_rooms:
-            data.append({
-                'id': room.id,
-                'title': room.title,
-                'description': room.description,
-            })
-
-        return Response(
-            {'rooms': data}, 
-            status=status.HTTP_200_OK
-        )
+        return Response({'rooms': data}, status=status.HTTP_200_OK)
 

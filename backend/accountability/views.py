@@ -50,5 +50,15 @@ class RoomStudyUpdateListView(
         return StudyUpdate.objects.filter(
             room_id=room_id
         )
+
+
+class GlobalStudyUpdateListView(
+    generics.ListAPIView
+):
+    serializer_class = StudyUpdateSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return StudyUpdate.objects.select_related("user", "room").all()
     
     

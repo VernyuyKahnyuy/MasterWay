@@ -18,6 +18,7 @@ import ProfilePage from "../pages/ProfilePage";
 import InboxPage from "../pages/InboxPage";
 import SendMessagePage from "../pages/SendMessagePage";
 import PublicProfilePage from "../pages/PublicProfilePage";
+import AccountabilityFeedPage from "../pages/AccountabilityFeedPage";
 
 function AppRouter() {
   return (
@@ -61,6 +62,8 @@ function AppRouter() {
       <Route path="/messages/send/:receiverId" element={<SendMessagePage />} />
 
       <Route path="/profiles/:userId" element={<PublicProfilePage />} />
+
+      <Route path="/feed" element={<AccountabilityFeedPage />} />
     </Routes>
   );
 }
