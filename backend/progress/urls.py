@@ -6,6 +6,7 @@ from .views import (
     EnrollmentCreateView,
     LessonProgressListView,
     LessonProgressCreateView,
+    ContinueLearningView,
 )
 
 urlpatterns = [
@@ -19,4 +20,6 @@ urlpatterns = [
     path('progress/', LessonProgressListView.as_view(), name='progress-list'),
 
     path('progress/create/', LessonProgressCreateView.as_view(), name='progress-create'),
+
+    path('continue-learning/', ContinueLearningView.as_view(), name="continue-learning"),
 ]

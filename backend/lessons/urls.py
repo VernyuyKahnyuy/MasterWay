@@ -1,8 +1,12 @@
+#lessons/urls.py
+
 from django.urls import path
 from .views import (
     LessonListView,
     LessonCreateView,
     LessonDetailView,
+    LessonUpdateView,
+    LessonDeleteView
 )
 
 urlpatterns = [
@@ -14,4 +18,8 @@ urlpatterns = [
 
     path('<int:pk>/', LessonDetailView.as_view(),
          name='lesson-detail'),
+    path('<int:pk>/update/', LessonUpdateView.as_view(),
+         name='lesson-update'),
+    path('<int:pk>/delete/', LessonDeleteView.as_view(),
+         name='lesson-delete'),
 ]

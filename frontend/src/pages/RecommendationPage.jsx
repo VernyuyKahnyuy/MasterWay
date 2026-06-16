@@ -55,8 +55,17 @@ function RecommendationsPage() {
     <div>
 
       <h1>
-        Recommended For You
+        Recommended For You!
       </h1>
+
+      {rooms.length==0 && (
+
+            <p>
+              No recommendations available.
+              Add your personalized interests to your profile to get better recommendations!
+            </p>
+
+        )}
 
       {rooms.map((room) => (
 
@@ -88,15 +97,6 @@ function RecommendationsPage() {
           >
             Open Room
           </Link>
-
-          {rooms.length === 0 && (
-
-            <p>
-              No recommendations available.
-              Add your personalized interests to your profile to get better recommendations!
-            </p>
-
-        )}
 
         </div>
 

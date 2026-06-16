@@ -48,7 +48,9 @@ INSTALLED_APPS = [
     'lessons', 
     'progress', 
     'community',
-    'ai_tools'
+    'ai_tools',
+    'profiles',
+    'messaging',
 ]
 
 MIDDLEWARE = [
@@ -149,3 +151,7 @@ SIMPLE_JWT = {
 }
 
 GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
+
+MEDIA_URL = "/media/"
+
+MEDIA_ROOT = BASE_DIR / "media"

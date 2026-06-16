@@ -15,3 +15,29 @@ export const getRoom = async (id) => {
 
   return response.data;
 };
+
+export const getMyRooms = async () => {
+  const response = await api.get(
+    "/rooms/my-rooms/"
+  );
+
+  return response.data;
+}
+
+export const createRoom = async (
+  formData
+) => {
+  const response = 
+    await api.post(
+      "/rooms/create/", 
+      formData, 
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    return response.data;
+
+};

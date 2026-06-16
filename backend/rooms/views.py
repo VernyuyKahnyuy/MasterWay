@@ -20,11 +20,22 @@ class RoomCreateView(CreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
-        serializer.save(owner=self.request.user)
+        serializer.save(creator=self.request.user)
     
 # 3. View to retrieve a single room by ID
 class RoomDetailView(RetrieveAPIView):
     queryset = Room.objects.all()
     serializer_class = RoomSerializer
 
+#4. View to list rooms created by the authenticated user
+class MyRoomsView(ListAPIView):
+    serializer_class = RoomSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+
+        return Room.objects.filter(
+            creator = self.request.user
+        )
     
+#5. 

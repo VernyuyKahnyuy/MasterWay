@@ -1,4 +1,6 @@
 from google import genai
+from google.genai.errors import ClientError
+
 from django.conf import settings
 from rooms.models import Room
 
@@ -66,12 +68,20 @@ def recommend_rooms(interests, rooms):
 
     print("Before calling gemini for recommendation")
 
-    response = client.models.generate_content(
-        model = "gemini-2.5-flash",
-        contents = prompt
-    )
+    try:
+        response = client.models.generate_content(
+            model = "gemini-2.5-flash",
+            contents = prompt
+        )
+        
+        print("after calling gemini for recommendation")
+        
+        recommended_ids = response.text
+        
+        return recommended_ids
+    
+    except Exception as e:
+        
+        print(e)
 
-    print("after calling gemini for recommendation")
-    recommended_ids = response.text
-
-    return recommended_ids
+        return ""

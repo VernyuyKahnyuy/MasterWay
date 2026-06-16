@@ -17,7 +17,9 @@ class RoomSerializer(serializers.ModelSerializer):
             'description',
             'creator', 
             'created_at',
-            'creator_username'
+            'creator_username',
+            
+            'cover_image'
         ]
 
         read_only_fields = ['creator']

@@ -6,6 +6,12 @@ from .models import Lesson
 
 class LessonSerializer(serializers.ModelSerializer):
 
+    creator_username = serializers.CharField(
+        source='creator.username',
+        read_only=True
+    )
+
+
     class Meta:
         model = Lesson
 

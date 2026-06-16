@@ -2,7 +2,7 @@
 
 from rest_framework import serializers
 from .models import Enrollment, LessonProgress
-
+from lessons.models import Lesson
 
 class EnrollmentSerializer(serializers.ModelSerializer):
 
@@ -18,7 +18,20 @@ class EnrollmentSerializer(serializers.ModelSerializer):
 
         read_only_fields = ['learner']
 
-class LessonProgressSerializer(serializers.ModelSerializer):
+class LessonProgressSerializer(
+    serializers.ModelSerializer
+    ):
+
+    lesson_title = serializers.CharField(
+        source="lesson.title",
+        read_only=True
+    )
+
+    room_title = serializers.CharField(
+        source="lesson.room.title",
+        read_only = True
+    )
+
     class Meta:
         model = LessonProgress
         
@@ -26,6 +39,8 @@ class LessonProgressSerializer(serializers.ModelSerializer):
             'id', 
             'learner',
             'lesson',
+            'lesson_title',
+            'room_title',
             'completed',
         ]
 

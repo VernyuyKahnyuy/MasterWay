@@ -75,6 +75,12 @@ class RoomRecommendationView(APIView):
             )
         )
 
+        if not recommendations:
+            
+            return Response({
+                "rooms" : []
+            })
+
         room_ids = [
             int(id.strip()) 
             for id in recommendations.split(',') 

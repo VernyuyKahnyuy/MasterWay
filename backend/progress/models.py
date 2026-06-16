@@ -34,6 +34,8 @@ class LessonProgress(models.Model):
 
     completed = models.BooleanField(default=False)
 
+    comleted_at = models.DateTimeField(auto_now_add=True)
+
     def __str__(self):
         return f"{self.learner.username} - {self.lesson.title}"
 
