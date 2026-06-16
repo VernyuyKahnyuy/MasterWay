@@ -1,18 +1,22 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { getLessonsByRoom } from "../services/lessonService";
 import { getRoom } from "../services/roomService";
 import { enrollInRoom } from "../services/enrollmentService";
 import { getCommentsByRoom, createComment } from "../services/commentService";
 import { formatDate } from "../utils/dateFormatter";
-import { Link } from "react-router-dom";
+import { getCurrentUserId } from "../utils/auth";
 
 function RoomDetailPage() {
   const { id } = useParams();
+  const currentUserId = getCurrentUserId();
   const [room, setRoom] = useState(null);
   const [lessons, setLessons] = useState([]);
   const [comments, setComments] = useState([]);
   const [commentText, setCommentText] = useState("");
+  const [enrolled, setEnrolled] = useState(false);
+  const [enrolling, setEnrolling] = useState(false);
+  const [postingComment, setPostingComment] = useState(false);
 
   useEffect(() => {
     const fetchRoom = async () => {
@@ -21,108 +25,201 @@ function RoomDetailPage() {
         setRoom(roomData);
         const lessonData = await getLessonsByRoom(id);
         setLessons(lessonData);
-
         const commentData = await getCommentsByRoom(id);
         setComments(commentData);
       } catch (error) {
         console.error(error);
       }
     };
-
     fetchRoom();
   }, [id]);
 
   const handleEnroll = async () => {
+    setEnrolling(true);
     try {
       await enrollInRoom(id);
-      alert("Enrolled successfully!");
+      setEnrolled(true);
     } catch (error) {
       console.error(error);
-      alert("Failed to enroll.");
+    } finally {
+      setEnrolling(false);
     }
   };
 
   const handleComment = async () => {
+    if (!commentText.trim()) return;
+    setPostingComment(true);
     try {
       await createComment(id, commentText);
-
       const updatedComments = await getCommentsByRoom(id);
       setComments(updatedComments);
       setCommentText("");
     } catch (error) {
       console.error(error);
-      alert("Failed to create comment.");
+    } finally {
+      setPostingComment(false);
     }
   };
 
   if (!room) {
-    return <h2>Loading...</h2>;
+    return (
+      <div className="flex items-center justify-center min-h-64">
+        <div className="text-center">
+          <div className="w-10 h-10 border-4 border-violet-600 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-gray-500">Loading room...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div>
-      {room.cover_image && (
+      {/* Cover */}
+      {room.cover_image ? (
         <img
           src={room.cover_image}
           alt={room.title}
-          style={{
-            width: "250px",
-            borderRadius: "10px",
-            marginBottom: "10px",
-          }}
+          className="w-full h-56 object-cover"
         />
-      )}
-
-      <h1>{room.title}</h1>
-
-      <p>{room.description}</p>
-
-      <button onClick={handleEnroll}>Enroll in this room</button>
-
-      <h2>Lessons</h2>
-
-      {lessons.length === 0 ? (
-        <p>No lessons available.</p>
       ) : (
-        lessons.map((lesson) => (
-          <div key={lesson.id}>
-            <h3>
-              {" "}
-              <Link to={`/lessons/${lesson.id}`}>{lesson.title}</Link>
-            </h3>
-            <p>{lesson.content}</p>
-          </div>
-        ))
+        <div className="w-full h-48 bg-gradient-to-br from-violet-600 to-violet-800" />
       )}
 
-      <hr />
+      <div className="px-6 py-8">
+        <div className="flex items-start justify-between gap-4 mb-2">
+          <h1 className="text-3xl font-bold text-gray-900">{room.title}</h1>
+          {enrolled ? (
+            <span className="shrink-0 bg-green-100 text-green-700 text-sm font-semibold px-4 py-2 rounded-lg">
+              ✓ Enrolled
+            </span>
+          ) : (
+            <button
+              onClick={handleEnroll}
+              disabled={enrolling}
+              className="shrink-0 bg-violet-600 hover:bg-violet-700 text-white font-semibold px-5 py-2.5 rounded-lg transition-colors disabled:opacity-60"
+            >
+              {enrolling ? "Enrolling..." : "Enroll"}
+            </button>
+          )}
+        </div>
 
-      <h2>Discussion</h2>
+        <p className="text-gray-500 mb-2">{room.description}</p>
 
-      <input
-        type="text"
-        value={commentText}
-        onChange={(e) => setCommentText(e.target.value)}
-        placeholder="Write a comment..."
-      />
+        <Link
+          to={`/messages/send/${room.creator}`}
+          className="inline-flex items-center gap-1.5 text-sm text-violet-600 hover:text-violet-700 font-medium mb-8"
+        >
+          ✉️ Message Expert
+        </Link>
 
-      <button onClick={handleComment}>Post Comment</button>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Lessons */}
+          <div className="lg:col-span-2">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold text-gray-900">
+                Lessons{" "}
+                <span className="text-gray-400 font-normal text-base">
+                  ({lessons.length})
+                </span>
+              </h2>
+              {currentUserId === room.creator && (
+                <Link
+                  to={`/expert/create-lesson?room=${id}`}
+                  className="bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors"
+                >
+                  + Add Lesson
+                </Link>
+              )}
+            </div>
 
-      {comments.length === 0 ? (
-        <p>No comments yet.</p>
-      ) : (
-        comments.map((comment) => (
-          <div key={comment.id}>
-            <Link to={`/profiles/${comment.user}`}>
-              <strong>{comment.username}</strong>
-            </Link>
-            <small> - {formatDate(comment.created_at)}</small>
-            <p>{comment.text}</p>
+            {lessons.length === 0 ? (
+              <div className="bg-gray-50 rounded-xl border border-gray-100 p-8 text-center text-gray-400">
+                <p className="text-3xl mb-2">📝</p>
+                <p>No lessons available yet.</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {lessons.map((lesson, idx) => (
+                  <Link
+                    key={lesson.id}
+                    to={`/lessons/${lesson.id}`}
+                    className="flex items-center gap-4 bg-white border border-gray-100 rounded-xl p-4 hover:border-violet-200 hover:shadow-sm transition-all group"
+                  >
+                    <span className="w-8 h-8 rounded-full bg-violet-100 text-violet-700 font-semibold text-sm flex items-center justify-center shrink-0">
+                      {idx + 1}
+                    </span>
+                    <div className="flex-1 text-left">
+                      <p className="font-medium text-gray-900 group-hover:text-violet-700 transition-colors">
+                        {lesson.title}
+                      </p>
+                      {lesson.content && (
+                        <p className="text-sm text-gray-400 mt-0.5 line-clamp-1">
+                          {lesson.content}
+                        </p>
+                      )}
+                    </div>
+                    <span className="text-gray-300 group-hover:text-violet-400 transition-colors">
+                      →
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
-        ))
-      )}
 
-      <Link to={`/messages/send/${room.creator}`}>Message Expert</Link>
+          {/* Discussion */}
+          <div>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              Discussion
+            </h2>
+
+            <div className="bg-gray-50 rounded-xl border border-gray-100 p-4 mb-4">
+              <textarea
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                placeholder="Share your thoughts or questions..."
+                rows={3}
+                className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none transition"
+              />
+              <button
+                onClick={handleComment}
+                disabled={postingComment || !commentText.trim()}
+                className="mt-2 w-full bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium py-2 rounded-lg transition-colors disabled:opacity-50"
+              >
+                {postingComment ? "Posting..." : "Post Comment"}
+              </button>
+            </div>
+
+            {comments.length === 0 ? (
+              <p className="text-sm text-gray-400 text-center py-4">
+                No comments yet. Be the first!
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {comments.map((comment) => (
+                  <div
+                    key={comment.id}
+                    className="bg-white rounded-xl border border-gray-100 p-4"
+                  >
+                    <div className="flex items-center justify-between mb-1.5">
+                      <Link
+                        to={`/profiles/${comment.user}`}
+                        className="text-sm font-semibold text-violet-700 hover:text-violet-800"
+                      >
+                        {comment.username}
+                      </Link>
+                      <span className="text-xs text-gray-400">
+                        {formatDate(comment.created_at)}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600">{comment.text}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

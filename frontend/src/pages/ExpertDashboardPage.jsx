@@ -1,31 +1,75 @@
-import { Link } from  "react-router-dom"
+import { Link } from "react-router-dom";
+
+const actions = [
+  {
+    to: "/expert/rooms",
+    icon: "🏫",
+    title: "My Rooms",
+    description: "View and manage all your learning rooms",
+    color: "from-violet-500 to-violet-700",
+  },
+  {
+    to: "/expert/create-room",
+    icon: "➕",
+    title: "Create Room",
+    description: "Launch a new learning room for your students",
+    color: "from-indigo-500 to-indigo-700",
+  },
+  {
+    to: "/expert/create-lesson",
+    icon: "📝",
+    title: "Create Lesson",
+    description: "Add a lesson with video, notes, PDF, and more",
+    color: "from-blue-500 to-blue-700",
+  },
+];
 
 function ExpertDashboardPage() {
-    return (
-        <div>
-            <h1>Expert Dashboard</h1>
+  return (
+    <div className="px-6 py-8">
+      {/* Header */}
+      <div className="bg-gradient-to-br from-violet-600 to-violet-800 rounded-2xl p-8 mb-8 text-white">
+        <p className="text-violet-300 text-sm font-medium mb-1">Expert Portal</p>
+        <h1 className="text-3xl font-bold mb-2">Welcome back, Expert!</h1>
+        <p className="text-violet-200">
+          Manage your rooms, create content, and grow your audience.
+        </p>
+      </div>
 
-            <ul>
-                <li>
-                    <Link to="/expert/rooms">
-                        My Rooms
-                    </Link>
-                </li>
+      {/* Quick Actions */}
+      <h2 className="text-xl font-semibold text-gray-900 mb-5">Quick Actions</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        {actions.map((action) => (
+          <Link
+            key={action.to}
+            to={action.to}
+            className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-violet-100 transition-all p-6"
+          >
+            <div
+              className={`w-12 h-12 rounded-xl bg-gradient-to-br ${action.color} text-white flex items-center justify-center text-2xl mb-4`}
+            >
+              {action.icon}
+            </div>
+            <h3 className="font-semibold text-gray-900 group-hover:text-violet-700 transition-colors mb-1">
+              {action.title}
+            </h3>
+            <p className="text-sm text-gray-500">{action.description}</p>
+          </Link>
+        ))}
+      </div>
 
-                <li>
-                    <Link to = "/expert/create-room">
-                        Create Room
-                    </Link>
-                </li>
-
-                <li>
-                    <Link to= "/expert/create-lesson">
-                        Create Lesson
-                    </Link>
-                </li>
-            </ul>
-        </div>
-    )
+      {/* Tips */}
+      <div className="bg-amber-50 border border-amber-100 rounded-2xl p-6">
+        <h3 className="font-semibold text-amber-900 mb-2">💡 Expert Tips</h3>
+        <ul className="space-y-2 text-sm text-amber-800">
+          <li>• Add a cover image to your rooms for better visibility</li>
+          <li>• Organize lessons with a clear order number</li>
+          <li>• Use YouTube links to embed video lessons</li>
+          <li>• Upload PDFs as downloadable lesson notes</li>
+        </ul>
+      </div>
+    </div>
+  );
 }
 
 export default ExpertDashboardPage;

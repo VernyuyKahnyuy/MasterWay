@@ -1,3 +1,5 @@
+#profiles/models
+
 from django.db import models
 from django.conf import settings  # 1. Import settings
 from users.models import UserInterest

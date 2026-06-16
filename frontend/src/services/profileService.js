@@ -20,3 +20,9 @@ export const getPublicProfile = async (userId) => {
 
   return response.data;
 };
+
+export const getSimilarLearners = async () => {
+  const response = await api.get("/profiles/similar/");
+
+  return response.data;
+};

@@ -1,3 +1,5 @@
+#profiles/serializers.PythonFinalizationError
+
 from rest_framework import serializers
 
 from .models import Profile
@@ -12,6 +14,11 @@ class ProfileSerializer(
             read_only=True
             
         )
+    
+    user = serializers.IntegerField(
+        source = "user.id",
+        read_only = True
+    )
 
     class Meta:
 

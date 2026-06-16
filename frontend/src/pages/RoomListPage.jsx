@@ -1,92 +1,132 @@
 import { useEffect, useState } from "react";
-import { getRooms } from "../services/roomService";
 import { Link } from "react-router-dom";
-import { getRecommendations } from "../services/recommendationService";
+import { getRooms } from "../services/roomService";
+import { getCurrentUserId } from "../utils/auth";
 
 function RoomListPage() {
+  const currentUserId = getCurrentUserId();
   const [rooms, setRooms] = useState([]);
-  const [recommendations, setRecommendations] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     const fetchRooms = async () => {
       try {
         const data = await getRooms();
         setRooms(data);
-
-        // const recommendationData =  await getRecommendations();
-
-        console.log("Recommendation API: ", recommendationData);
-
-        // setRecommendations(recommendationData.rooms || []);
-
-        console.log("Recommendations State: ", recommendationData.rooms);
       } catch (error) {
         console.error(error);
+      } finally {
+        setLoading(false);
       }
     };
-
     fetchRooms();
   }, []);
 
+  const filtered = rooms.filter(
+    (r) =>
+      r.title.toLowerCase().includes(search.toLowerCase()) ||
+      r.description?.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
-    <div>
-      <h2> Recommended For You </h2>
-
-      {recommendations.length > 0 ? (
-        recommendations.map((room) => (
-          <div key={room.id}>
-            {room.cover_image && (
-              <img
-                src={room.cover_image}
-                alt={room.title}
-                style={{
-                  width: "250px",
-                  borderRadius: "10px",
-                  marginBottom: "10px",
-                }}
-              />
-            )}
-
-            <p>laugh</p>
-
-            <h3>{room.title} is</h3>
-
-            <p>{room.description}</p>
-
-            <Link to={`/rooms/${room.id}`}>Open Room</Link>
-          </div>
-        ))
-      ) : (
-        <p>No recommendations yet.</p>
-      )}
-
-      <h1>Available Rooms</h1>
-
-      {rooms.map((room) => (
-        <div key={room.id}>
-          {room.cover_image && (
-            <img
-              src={room.cover_image}
-              alt={room.title}
-              style={{
-                width: "50px",
-                borderRadius: "10px",
-              }}
-            />
-          )}
-          <h3>
-            <Link to={`/rooms/${room.id}`}>{room.title}</Link>
-          </h3>
-          <Link to={`/profiles/${room.creator}`}>
-            <p> Created by: {room.creator_username} </p>
-          </Link>
-          <p>Created: {new Date(room.created_at).toLocaleDateString()} </p>
-
-          <p>{room.description}</p>
-
-          <hr />
+    <div className="px-6 py-8">
+      {/* Hero */}
+      <div className="bg-gradient-to-br from-violet-600 to-violet-800 rounded-2xl p-8 mb-8 text-white">
+        <h1 className="text-3xl font-bold mb-2">Find your next learning room</h1>
+        <p className="text-violet-200 mb-6">
+          Explore expert-led rooms, follow lessons, and track your progress.
+        </p>
+        <div className="relative max-w-lg">
+          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+            🔍
+          </span>
+          <input
+            type="text"
+            placeholder="Search rooms..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/15 border border-white/20 text-white placeholder-violet-300 focus:outline-none focus:ring-2 focus:ring-white/40 transition"
+          />
         </div>
-      ))}
+      </div>
+
+      {/* Room Grid */}
+      <div className="flex items-center justify-between mb-5">
+        <h2 className="text-xl font-semibold text-gray-900">
+          Available Rooms{" "}
+          <span className="text-gray-400 font-normal text-base">
+            ({filtered.length})
+          </span>
+        </h2>
+        <Link
+          to="/recommendations"
+          className="text-sm text-violet-600 hover:text-violet-700 font-medium"
+        >
+          View recommendations →
+        </Link>
+      </div>
+
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div
+              key={i}
+              className="bg-gray-100 rounded-2xl h-52 animate-pulse"
+            />
+          ))}
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="text-center py-20 text-gray-400">
+          <p className="text-4xl mb-3">📚</p>
+          <p className="font-medium text-gray-500">No rooms found</p>
+          <p className="text-sm mt-1">Try a different search term</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filtered.map((room) => (
+            <Link
+              key={room.id}
+              to={`/rooms/${room.id}`}
+              className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-violet-100 transition-all overflow-hidden"
+            >
+              {room.cover_image ? (
+                <img
+                  src={room.cover_image}
+                  alt={room.title}
+                  className="w-full h-36 object-cover"
+                />
+              ) : (
+                <div className="w-full h-36 bg-gradient-to-br from-violet-100 to-violet-200 flex items-center justify-center text-4xl">
+                  📖
+                </div>
+              )}
+              <div className="p-5">
+                <h3 className="font-semibold text-gray-900 group-hover:text-violet-700 transition-colors line-clamp-1">
+                  {room.title}
+                </h3>
+                <p className="text-sm text-gray-500 mt-1 line-clamp-2">
+                  {room.description}
+                </p>
+                <div className="flex items-center justify-between mt-4">
+                  <span className="text-xs text-gray-400">
+                    by{" "}
+                    <span className="text-violet-600 font-medium">
+                      {room.creator_username}
+                    </span>
+                    {room.creator === currentUserId && (
+                      <span className="ml-1 text-violet-400">(you)</span>
+                    )}
+                  </span>
+                  <span className="text-xs text-gray-400">
+                    {new Date(room.created_at).toLocaleDateString()}
+                  </span>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
