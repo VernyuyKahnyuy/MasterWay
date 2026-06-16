@@ -6,6 +6,8 @@ import { enrollInRoom } from "../services/enrollmentService";
 import { getCommentsByRoom, createComment } from "../services/commentService";
 import { formatDate } from "../utils/dateFormatter";
 import { getCurrentUserId } from "../utils/auth";
+import { createUpdate } from "../services/accountabilityService";
+import { getRoomUpdates } from "../services/accountabilityService";
 
 function RoomDetailPage() {
   const { id } = useParams();
@@ -17,6 +19,8 @@ function RoomDetailPage() {
   const [enrolled, setEnrolled] = useState(false);
   const [enrolling, setEnrolling] = useState(false);
   const [postingComment, setPostingComment] = useState(false);
+  const [updates, setUpdates] = useState([]);
+  const [updateContent, setUpdateContent] = useState("");
 
   useEffect(() => {
     const fetchRoom = async () => {
@@ -27,6 +31,8 @@ function RoomDetailPage() {
         setLessons(lessonData);
         const commentData = await getCommentsByRoom(id);
         setComments(commentData);
+        const updateData = await getRoomUpdates(id);
+        setUpdates(updateData);
       } catch (error) {
         console.error(error);
       }
@@ -59,6 +65,24 @@ function RoomDetailPage() {
     } finally {
       setPostingComment(false);
     }
+  };
+
+  const handleUpdateSubmit = async (e) => {
+    e.preventDefault();
+
+    console.log("SUBMIT CLICKED");
+
+    await createUpdate({
+      room: id,
+
+      content: updateContent,
+    });
+
+    const refreshed = await getRoomUpdates(id);
+
+    setUpdates(refreshed);
+
+    setUpdateContent("");
   };
 
   if (!room) {
@@ -166,6 +190,38 @@ function RoomDetailPage() {
               </div>
             )}
           </div>
+
+          {/* accountability circle */}
+          <h2>Accountability Circle</h2>
+
+          <form onSubmit={handleUpdateSubmit}>
+            <textarea
+              value={updateContent}
+              onChange={(e) => setUpdateContent(e.target.value)}
+              placeholder="Share your learning progress..."
+            />
+
+            <button
+              onClick={handleUpdateSubmit}
+              className="mt-2 w-full bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium py-2 rounded-lg transition-colors disabled:opacity-50"
+            >
+              Post Update
+            </button>
+          </form>
+
+          {updates.map((update) => (
+            <div key={update.id}>
+              <Link to={`/profiles/${update.user}`}>
+                <h4>{update.username}</h4>
+              </Link>
+
+              <p>{update.content}</p>
+
+              <small>{new Date(update.created_at).toLocaleString()}</small>
+
+              <hr />
+            </div>
+          ))}
 
           {/* Discussion */}
           <div>
