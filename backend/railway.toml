@@ -1,0 +1,7 @@
+[build]
+builder = "nixpacks"
+
+[deploy]
+startCommand = "python manage.py migrate && gunicorn config.wsgi:application"
+healthcheckPath = "/api/rooms/"
+restartPolicyType = "on_failure"

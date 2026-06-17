@@ -26,15 +26,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-0**tzsdudi+&i50)li5#ol8d#i96-m71ihbm&$a5zcamt*%7nm'
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-0**tzsdudi+&i50)li5#ol8d#i96-m71ihbm&$a5zcamt*%7nm')
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    '.onrender.com',
+    '.railway.app',
+    '.up.railway.app',
 ]
 
 
@@ -146,7 +146,13 @@ STATIC_URL = '/static/'
 
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = DEBUG  # open only in local dev
+
+CORS_ALLOWED_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv('CORS_ALLOWED_ORIGINS', 'http://localhost:5173').split(',')
+    if origin.strip()
+]
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (

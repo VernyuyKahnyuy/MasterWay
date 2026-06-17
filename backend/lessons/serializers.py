@@ -11,8 +11,7 @@ class LessonSerializer(serializers.ModelSerializer):
         read_only=True
     )
 
-
     class Meta:
         model = Lesson
-
         fields = '__all__'
+        read_only_fields = ['creator']
