@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getAllUpdates } from "../services/accountabilityService";
 import { getCurrentUserId } from "../utils/auth";
+import UserAvatar from "../components/UserAvatar";
 
 function timeAgo(dateStr) {
   const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000);
@@ -10,27 +11,6 @@ function timeAgo(dateStr) {
   if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
   if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
   return new Date(dateStr).toLocaleDateString();
-}
-
-function Avatar({ username }) {
-  const colors = [
-    "bg-violet-500",
-    "bg-indigo-500",
-    "bg-blue-500",
-    "bg-emerald-500",
-    "bg-amber-500",
-    "bg-rose-500",
-    "bg-pink-500",
-    "bg-cyan-500",
-  ];
-  const color = colors[username.charCodeAt(0) % colors.length];
-  return (
-    <div
-      className={`w-10 h-10 rounded-full ${color} text-white font-bold text-sm flex items-center justify-center shrink-0 uppercase`}
-    >
-      {username[0]}
-    </div>
-  );
 }
 
 function AccountabilityFeedPage() {
@@ -51,7 +31,7 @@ function AccountabilityFeedPage() {
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
           <div className="w-10 h-10 bg-violet-100 rounded-xl flex items-center justify-center text-xl">
-            🔥
+            🫂
           </div>
           <h1 className="text-3xl font-bold text-gray-900">
             Accountability Feed
@@ -105,7 +85,10 @@ function AccountabilityFeedPage() {
                   }`}
                 >
                   <div className="flex gap-4">
-                    <Avatar username={update.username} />
+                    <UserAvatar
+                      username={update.username}
+                      profilePicture={update.profile_picture}
+                    />
                     <div className="flex-1 min-w-0">
                       {/* Meta row */}
                       <div className="flex items-center gap-2 flex-wrap mb-1">

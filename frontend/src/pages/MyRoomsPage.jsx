@@ -43,7 +43,7 @@ function MyRoomsPage() {
         </div>
       ) : rooms.length === 0 ? (
         <div className="bg-gray-50 border border-gray-100 rounded-2xl p-12 text-center">
-          <p className="text-4xl mb-3">🏫</p>
+          <img src="/icon-expert.svg" alt="" className="w-20 h-20 mx-auto mb-3 opacity-60" />
           <p className="font-medium text-gray-700 mb-2">
             No rooms created yet
           </p>
@@ -72,9 +72,7 @@ function MyRoomsPage() {
                     className="w-24 h-20 object-cover rounded-xl shrink-0"
                   />
                 ) : (
-                  <div className="w-24 h-20 bg-gradient-to-br from-violet-100 to-violet-200 rounded-xl flex items-center justify-center text-3xl shrink-0">
-                    📖
-                  </div>
+                  <img src="/default-room.jpg" alt="" className="w-24 h-20 object-cover rounded-xl shrink-0" />
                 )}
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-gray-900 text-lg mb-1">

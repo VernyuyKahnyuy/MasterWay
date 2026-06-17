@@ -2,6 +2,13 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { loginUser } from "../services/authService";
 
+const CYAN = "#00C8FF";          // neon — for backgrounds only (white text on top)
+const CYAN_TEXT = "var(--cyber-text)"; // accessible — for text on white/light surfaces
+const GRID_BG = {
+  background:
+    "radial-gradient(ellipse at 50% 0%, rgba(0,200,255,0.08) 0%, transparent 70%), #F4F4FF",
+};
+
 function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -19,55 +26,98 @@ function LoginPage() {
       window.location.href = "/dashboard";
     } catch (err) {
       console.error(err);
-      setError("Invalid username or password. Please try again.");
+      setError("Invalid credentials. Access denied.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-16 bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center px-4 py-16" style={GRID_BG}>
       <div className="w-full max-w-md">
+        {/* header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 bg-violet-600 text-white rounded-xl text-xl font-bold mb-4">
-            L
+          <div
+            className="inline-flex items-center justify-center w-12 h-12 rounded text-white text-lg font-bold mb-4"
+            style={{
+              background: CYAN,
+              boxShadow: `0 0 20px rgba(0,200,255,0.5), 0 0 40px rgba(0,200,255,0.2)`,
+              fontFamily: "'Space Mono', monospace",
+            }}
+          >
+            LR
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">Welcome back</h1>
-          <p className="text-gray-500 mt-1">Sign in to continue learning</p>
+          <h1
+            className="text-3xl font-bold text-gray-900"
+            style={{ fontFamily: "'Rajdhani', sans-serif", letterSpacing: "0.06em" }}
+          >
+            ACCESS TERMINAL
+          </h1>
+          <p
+            className="mt-1 text-sm"
+            style={{ color: "#606090", fontFamily: "'Space Mono', monospace", fontSize: "0.72rem" }}
+          >
+            // authenticate to continue
+          </p>
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
+        {/* form panel */}
+        <div
+          className="bg-white rounded-xl border border-gray-100 shadow-sm p-8 relative"
+          style={{ borderColor: "rgba(0,200,255,0.22)" }}
+        >
+          {/* corner brackets */}
+          <div className="absolute top-0 left-0 w-5 h-5 pointer-events-none" style={{ borderTop: `2px solid ${CYAN}`, borderLeft: `2px solid ${CYAN}` }} />
+          <div className="absolute top-0 right-0 w-5 h-5 pointer-events-none" style={{ borderTop: `2px solid ${CYAN}`, borderRight: `2px solid ${CYAN}` }} />
+          <div className="absolute bottom-0 left-0 w-5 h-5 pointer-events-none" style={{ borderBottom: `2px solid ${CYAN}`, borderLeft: `2px solid ${CYAN}` }} />
+          <div className="absolute bottom-0 right-0 w-5 h-5 pointer-events-none" style={{ borderBottom: `2px solid ${CYAN}`, borderRight: `2px solid ${CYAN}` }} />
+
           {error && (
-            <div className="mb-5 p-3 bg-red-50 border border-red-100 rounded-lg text-sm text-red-600">
-              {error}
+            <div
+              className="mb-5 p-3 rounded text-sm"
+              style={{
+                background: "rgba(255,0,144,0.08)",
+                border: "1px solid rgba(255,0,144,0.30)",
+                color: "#FF0090",
+                fontFamily: "'Space Mono', monospace",
+                fontSize: "0.72rem",
+              }}
+            >
+              ⚠ {error}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Username
+              <label
+                className="block text-xs font-bold mb-1.5 tracking-widest"
+                style={{ color: CYAN_TEXT, fontFamily: "'Space Mono', monospace" }}
+              >
+                USERNAME
               </label>
               <input
                 type="text"
-                placeholder="Enter your username"
+                placeholder="enter username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition"
+                className="w-full border border-gray-200 rounded px-4 py-3 text-gray-900 text-sm focus:outline-none transition"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Password
+              <label
+                className="block text-xs font-bold mb-1.5 tracking-widest"
+                style={{ color: CYAN_TEXT, fontFamily: "'Space Mono', monospace" }}
+              >
+                PASSWORD
               </label>
               <input
                 type="password"
-                placeholder="Enter your password"
+                placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full border border-gray-200 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition"
+                className="w-full border border-gray-200 rounded px-4 py-3 text-gray-900 text-sm focus:outline-none transition"
                 required
               />
             </div>
@@ -75,19 +125,29 @@ function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-violet-600 hover:bg-violet-700 text-white font-semibold py-3 rounded-lg transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              className="cyber-btn w-full text-white font-bold py-3 rounded tracking-widest transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+              style={{
+                background: loading ? "rgba(0,200,255,0.6)" : CYAN,
+                fontFamily: "'Rajdhani', sans-serif",
+                letterSpacing: "0.12em",
+                boxShadow: `0 0 14px rgba(0,200,255,0.35)`,
+              }}
             >
-              {loading ? "Signing in..." : "Sign in"}
+              {loading ? "AUTHENTICATING..." : "AUTHENTICATE"}
             </button>
           </form>
 
-          <p className="text-center text-sm text-gray-500 mt-6">
-            Don&apos;t have an account?{" "}
+          <p
+            className="text-center text-xs mt-6 tracking-wide"
+            style={{ color: "#8888B8", fontFamily: "'Space Mono', monospace" }}
+          >
+            NO ACCOUNT?{" "}
             <Link
               to="/register"
-              className="text-violet-600 hover:text-violet-700 font-medium"
+              className="font-bold hover:opacity-80 transition-opacity"
+              style={{ color: CYAN_TEXT }}
             >
-              Create one free
+              REQUEST ACCESS
             </Link>
           </p>
         </div>

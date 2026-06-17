@@ -174,7 +174,7 @@ function CreateLessonPage() {
                 PDF Notes
               </label>
               <label className="flex flex-col items-center gap-1 cursor-pointer bg-gray-50 border-2 border-dashed border-gray-200 hover:border-violet-300 hover:bg-violet-50 rounded-xl px-4 py-4 text-xs text-gray-500 transition-colors">
-                <span className="text-2xl">📄</span>
+                <svg className="w-8 h-8 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
                 {pdf ? (
                   <span className="text-violet-600 font-medium truncate max-w-full">
                     {pdf.name}

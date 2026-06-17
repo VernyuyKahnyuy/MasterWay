@@ -24,6 +24,13 @@ export const getMyRooms = async () => {
   return response.data;
 }
 
+export const updateRoom = async (id, formData) => {
+  const response = await api.patch(`/rooms/${id}/update/`, formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return response.data;
+};
+
 export const createRoom = async (
   formData
 ) => {

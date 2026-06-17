@@ -39,7 +39,7 @@ function RecommendationsPage() {
         </div>
       ) : rooms.length === 0 ? (
         <div className="bg-violet-50 border border-violet-100 rounded-2xl p-10 text-center">
-          <p className="text-4xl mb-4">🎯</p>
+          <img src="/img-discover.png" alt="" className="w-28 h-28 mx-auto mb-4 opacity-70 object-contain" />
           <h2 className="text-xl font-semibold text-gray-800 mb-2">
             No recommendations yet
           </h2>
@@ -61,9 +61,7 @@ function RecommendationsPage() {
               key={room.id}
               className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-violet-100 transition-all overflow-hidden"
             >
-              <div className="w-full h-32 bg-gradient-to-br from-violet-100 to-indigo-100 flex items-center justify-center text-3xl">
-                ✨
-              </div>
+              <img src="/default-room.jpg" alt="" className="w-full h-32 object-cover" />
               <div className="p-5">
                 <div className="flex items-start justify-between gap-2">
                   <h2 className="font-semibold text-gray-900 line-clamp-1">

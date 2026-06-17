@@ -9,14 +9,26 @@ class MessageSerializer(
 ):
 
     sender_username = serializers.CharField(
-            source="sender.username",
-            read_only=True
-        )
+        source="sender.username",
+        read_only=True
+    )
 
     receiver_username = serializers.CharField(
-            source="receiver.username",
-            read_only=True
-        )
+        source="receiver.username",
+        read_only=True
+    )
+
+    sender_profile_picture = serializers.SerializerMethodField()
+
+    def get_sender_profile_picture(self, obj):
+        try:
+            pic = obj.sender.profile.profile_picture
+            if not pic:
+                return None
+            request = self.context.get("request")
+            return request.build_absolute_uri(pic.url) if request else pic.url
+        except Exception:
+            return None
 
     class Meta:
 

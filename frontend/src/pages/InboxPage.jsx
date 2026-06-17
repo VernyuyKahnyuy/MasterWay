@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import UserAvatar from "../components/UserAvatar";
 import { getInbox } from "../services/messageService";
 
 function InboxPage() {
@@ -41,7 +42,7 @@ function InboxPage() {
         </div>
       ) : messages.length === 0 ? (
         <div className="bg-gray-50 border border-gray-100 rounded-2xl p-12 text-center">
-          <p className="text-4xl mb-3">✉️</p>
+          <svg className="w-16 h-16 mx-auto mb-3 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
           <p className="font-medium text-gray-700">No messages yet</p>
           <p className="text-sm text-gray-400 mt-1">
             When someone messages you, it will appear here.
@@ -55,9 +56,7 @@ function InboxPage() {
               className="p-5 hover:bg-gray-50 transition-colors"
             >
               <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center font-bold text-sm shrink-0">
-                  {message.sender_username?.[0]?.toUpperCase() || "?"}
-                </div>
+                <UserAvatar username={message.sender_username || "?"} profilePicture={message.sender_profile_picture} />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-2">
                     <p className="font-semibold text-gray-900 text-sm">

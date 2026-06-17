@@ -119,7 +119,7 @@ function LearnerDashboardPage() {
             </div>
           ) : (
             <div className="bg-gray-50 border border-gray-100 rounded-2xl p-8 text-center">
-              <p className="text-3xl mb-2">🎉</p>
+              <img src="/img-all-caught-up.png" alt="" className="w-28 h-28 mx-auto mb-3 object-contain" />
               <p className="font-medium text-gray-700">
                 You are all caught up!
               </p>
@@ -176,7 +176,7 @@ function LearnerDashboardPage() {
             </div>
           ) : (
             <div className="bg-gray-50 border border-gray-100 rounded-2xl p-8 text-center">
-              <p className="text-3xl mb-2">👥</p>
+              <img src="/default-avatar.png" alt="" className="w-16 h-16 mx-auto mb-3 rounded-full opacity-50 object-cover" />
               <p className="text-gray-500 text-sm">No similar learners found yet.</p>
             </div>
           )}
@@ -189,7 +189,7 @@ function LearnerDashboardPage() {
           </h2>
           {progress.length === 0 ? (
             <div className="bg-gray-50 border border-gray-100 rounded-2xl p-8 text-center">
-              <p className="text-3xl mb-2">📚</p>
+              <img src="/img-no-lessons.png" alt="" className="w-28 h-28 mx-auto mb-3 opacity-70 object-contain" />
               <p className="text-gray-500 text-sm">
                 No lessons completed yet. Start learning!
               </p>

@@ -9,9 +9,15 @@ function LogoutButton() {
   return (
     <button
       onClick={handleLogout}
-      className="ml-2 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+      className="px-3 py-2 text-sm font-bold tracking-widest transition-all hover:opacity-80"
+      style={{
+        color: "#FF0090",
+        textShadow: "0 0 8px rgba(255,0,144,0.4)",
+        fontFamily: "'Space Mono', monospace",
+        fontSize: "0.7rem",
+      }}
     >
-      Logout
+      [LOGOUT]
     </button>
   );
 }

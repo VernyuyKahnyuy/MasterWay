@@ -24,8 +24,9 @@ class MyProfileView(APIView):
             )
 
         serializer = ProfileSerializer(
-                profile
-            )
+            profile,
+            context={'request': request}
+        )
 
         return Response(
             serializer.data

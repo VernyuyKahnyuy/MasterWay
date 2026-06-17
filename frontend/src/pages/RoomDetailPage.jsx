@@ -133,7 +133,7 @@ function RoomDetailPage() {
                 Owned by you
               </span>
               <Link
-                to={`/expert/room/${id}`}
+                to={`/expert/rooms/${id}/edit`}
                 className="bg-violet-600 hover:bg-violet-700 text-white font-semibold px-5 py-2.5 rounded-lg transition-colors text-sm"
               >
                 Edit Room
@@ -161,7 +161,8 @@ function RoomDetailPage() {
             to={`/messages/send/${room.creator}`}
             className="inline-flex items-center gap-1.5 text-sm text-violet-600 hover:text-violet-700 font-medium mb-8"
           >
-            ✉️ Message Expert
+            <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+          Message Expert
           </Link>
         )}
 
@@ -187,7 +188,7 @@ function RoomDetailPage() {
 
             {lessons.length === 0 ? (
               <div className="bg-gray-50 rounded-xl border border-gray-100 p-8 text-center text-gray-400">
-                <p className="text-3xl mb-2">📝</p>
+                <img src="/img-no-lessons.png" alt="" className="w-24 h-24 mx-auto mb-3 opacity-70 object-contain" />
                 <p>No lessons available yet.</p>
               </div>
             ) : (
@@ -195,7 +196,7 @@ function RoomDetailPage() {
                 {lessons.map((lesson, idx) => (
                   <div
                     key={lesson.id}
-                    className="group flex items-center bg-white border border-gray-100 rounded-xl hover:border-violet-200 hover:shadow-sm transition-all overflow-hidden"
+                    className="lesson-item group flex items-center bg-white border border-gray-100 rounded-xl overflow-hidden"
                   >
                     <Link
                       to={`/lessons/${lesson.id}`}

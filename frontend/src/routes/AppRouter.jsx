@@ -19,6 +19,7 @@ import InboxPage from "../pages/InboxPage";
 import SendMessagePage from "../pages/SendMessagePage";
 import PublicProfilePage from "../pages/PublicProfilePage";
 import AccountabilityFeedPage from "../pages/AccountabilityFeedPage";
+import EditRoomPage from "../pages/EditRoomPage";
 
 function AppRouter() {
   return (
@@ -45,7 +46,7 @@ function AppRouter() {
 
       <Route path="/expert/create-lesson" element={<CreateLessonPage />} />
 
-      {/* <Route path="/expert/rooms/:id/edit" element = {} /> */}
+      <Route path="/expert/rooms/:id/edit" element={<EditRoomPage />} />
 
       <Route path="/expert/room/:id" element={<ManageRoomPage />} />
 

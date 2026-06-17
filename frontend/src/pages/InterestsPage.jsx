@@ -82,7 +82,7 @@ function InterestsPage() {
       {/* Interests List */}
       {interests.length === 0 ? (
         <div className="bg-gray-50 border border-gray-100 rounded-2xl p-10 text-center">
-          <p className="text-3xl mb-3">🎯</p>
+          <img src="/img-discover.png" alt="" className="w-28 h-28 mx-auto mb-3 opacity-70 object-contain" />
           <p className="font-medium text-gray-700">No interests yet</p>
           <p className="text-sm text-gray-400 mt-1">
             Add some topics you&apos;d like to learn about.

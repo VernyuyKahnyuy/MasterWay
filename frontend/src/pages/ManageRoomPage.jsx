@@ -54,9 +54,7 @@ function ManageRoomPage() {
               className="w-32 h-24 object-cover rounded-xl shrink-0"
             />
           ) : (
-            <div className="w-32 h-24 bg-gradient-to-br from-violet-100 to-violet-200 rounded-xl flex items-center justify-center text-4xl shrink-0">
-              📖
-            </div>
+            <img src="/default-room.jpg" alt="" className="w-32 h-24 object-cover rounded-xl shrink-0" />
           )}
           <div className="flex-1">
             <p className="text-xs font-semibold text-violet-600 uppercase tracking-wide mb-1">
@@ -94,7 +92,7 @@ function ManageRoomPage() {
 
       {lessons.length === 0 ? (
         <div className="bg-gray-50 border border-gray-100 rounded-2xl p-10 text-center">
-          <p className="text-3xl mb-3">📝</p>
+          <img src="/img-no-lessons.png" alt="" className="w-24 h-24 mx-auto mb-3 opacity-70 object-contain" />
           <p className="font-medium text-gray-700 mb-2">No lessons yet</p>
           <p className="text-sm text-gray-400 mb-5">
             Create your first lesson for this room.

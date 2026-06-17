@@ -1,25 +1,333 @@
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
+/* ═══════════════════════════════════════════════════════════
+   CYBERPUNK COLOR SYSTEM
+   Remap Tailwind's violet palette → neon cyan
+   Remap grays → purple-tinted cyber-grays
+   ═══════════════════════════════════════════════════════════ */
+
 :root {
-  color-scheme: light dark;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
+  /*
+   * TWO-TIER COLOUR STRATEGY
+   * --cyber-text  : dark enough to read on white  (#006699 ≈ 7:1 contrast)
+   * --cyber-neon  : bright neon for glows, borders, and backgrounds that carry
+   *                 white text (contrast is fine there)
+   * In night mode both flip to bright neon because dark surfaces absorb light.
+   */
+  --cyber-text: #006699;
+  --cyber-neon: #00C8FF;
+
+  /* violet → accessible dark cyan (text/interactive on white) */
+  --color-violet-50:  #E6F8FF;
+  --color-violet-100: #BAE8FF;
+  --color-violet-200: #7DD4FF;
+  --color-violet-300: #3ABEFF;
+  --color-violet-400: #009FCC;
+  --color-violet-500: #007DAA;
+  --color-violet-600: #006699;   /* ← readable on white, ~7:1 */
+  --color-violet-700: #005580;
+  --color-violet-800: #003D66;
+  --color-violet-900: #00294D;
+
+  /* cyber-tinted grays */
+  --color-gray-50:  #F4F4FF;
+  --color-gray-100: #EAEAFF;
+  --color-gray-200: #D5D5F5;
+  --color-gray-300: #B5B5DC;
+  --color-gray-400: #8888B8;
+  --color-gray-500: #606090;
+  --color-gray-600: #404060;
+  --color-gray-700: #2A2A45;
+  --color-gray-800: #1C1C38;
+  --color-gray-900: #05000F;
+
+  /* ── design tokens ── */
+  --cyber-primary:        #006699;   /* matches --cyber-text for consistency */
+  --cyber-primary-glow:   rgba(0, 200, 255, 0.40);   /* glow still uses neon */
+  --cyber-primary-subtle: rgba(0, 200, 255, 0.10);
+  --cyber-magenta:        #FF0090;
+  --cyber-magenta-glow:   rgba(255, 0, 144, 0.35);
+  --cyber-lime:           #C8FF00;
+
+  --card-border:          rgba(0, 200, 255, 0.18);
+  --card-hover-border:    rgba(0, 200, 255, 0.55);
+  --card-hover-glow:      0 0 20px rgba(0, 200, 255, 0.18), 0 4px 24px rgba(0, 0, 0, 0.06);
+  --grid-color:           rgba(0, 200, 255, 0.04);
 }
+
+/* ═══════════════════════════════════════════════════════════
+   NIGHT MODE — data-theme="dark" on <html>
+   ═══════════════════════════════════════════════════════════ */
+
+html[data-theme="dark"] {
+  /* restore full neon on dark surfaces — contrast is now fine */
+  --cyber-text: #00C8FF;
+  --cyber-neon: #00C8FF;
+  --cyber-primary: #00C8FF;
+
+  /* violet → full neon in dark mode */
+  --color-violet-50:  rgba(0, 200, 255, 0.08);
+  --color-violet-100: rgba(0, 200, 255, 0.15);
+  --color-violet-200: rgba(0, 200, 255, 0.25);
+  --color-violet-300: #55C8FF;
+  --color-violet-400: #22B5F5;
+  --color-violet-500: #00AADD;
+  --color-violet-600: #00C8FF;   /* ← full neon on dark */
+  --color-violet-700: #00AADD;
+  --color-violet-800: #0088BB;
+  --color-violet-900: #006699;
+
+  --color-gray-50:  #0A001A;
+  --color-gray-100: #110030;
+  --color-gray-200: #1C004A;
+  --color-gray-300: #280060;
+  --color-gray-400: #5858A8;
+  --color-gray-500: #7878C8;
+  --color-gray-600: #9898D8;
+  --color-gray-700: #B0B0E8;
+  --color-gray-800: #C8C8F8;
+  --color-gray-900: #E0E0FF;
+
+  --card-border:       rgba(0, 200, 255, 0.22);
+  --card-hover-border: rgba(0, 200, 255, 0.70);
+  --card-hover-glow:   0 0 28px rgba(0, 200, 255, 0.28), 0 0 60px rgba(0, 200, 255, 0.10);
+  --grid-color:        rgba(0, 200, 255, 0.06);
+}
+
+/* white/light surfaces → dark in night mode */
+html[data-theme="dark"] .bg-white         { background-color: #0F0028 !important; }
+html[data-theme="dark"] .bg-gray-50       { background-color: #0A001A !important; }
+html[data-theme="dark"] .border-gray-100  { border-color: rgba(0, 200, 255, 0.18) !important; }
+html[data-theme="dark"] .border-gray-200  { border-color: rgba(0, 200, 255, 0.22) !important; }
+html[data-theme="dark"] .shadow-sm        { box-shadow: 0 0 12px rgba(0, 200, 255, 0.12) !important; }
+html[data-theme="dark"] .shadow-md        { box-shadow: 0 0 24px rgba(0, 200, 255, 0.18) !important; }
+
+/* ═══════════════════════════════════════════════════════════
+   TYPOGRAPHY
+   ═══════════════════════════════════════════════════════════ */
 
 body {
   margin: 0;
-  background-color: #f9fafb;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: #EEEEFF;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  color-scheme: light dark;
 }
+
+html[data-theme="dark"] body {
+  background-color: #030008;
+}
+
+h1, h2, h3, h4 {
+  font-family: 'Rajdhani', 'Inter', system-ui, sans-serif;
+  letter-spacing: 0.02em;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ROOT FRAME
+   ═══════════════════════════════════════════════════════════ */
 
 #root {
   width: 1126px;
   max-width: 100%;
   margin: 0 auto;
-  border-inline: 1px solid #e5e7eb;
+  border-inline: 1px solid rgba(0, 200, 255, 0.15);
   min-height: 100svh;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
   background: white;
+  position: relative;
 }
+
+/* subtle grid overlay pinned behind all content */
+#root::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1126px;
+  max-width: 100%;
+  height: 100%;
+  pointer-events: none;
+  background-image:
+    linear-gradient(var(--grid-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+  background-size: 40px 40px;
+  z-index: 0;
+}
+
+html[data-theme="dark"] #root {
+  background: #05000F;
+  border-color: rgba(0, 200, 255, 0.20);
+}
+
+/* all primary sections float above the grid */
+nav, main, footer { position: relative; z-index: 1; }
+
+/* ═══════════════════════════════════════════════════════════
+   CYBER CARD — hover glow + neon border
+   Add class "cyber-card" to any card element
+   ═══════════════════════════════════════════════════════════ */
+
+.cyber-card {
+  border-color: var(--card-border) !important;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.22s ease !important;
+}
+.cyber-card:hover {
+  border-color: var(--card-hover-border) !important;
+  box-shadow: var(--card-hover-glow) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LESSON ITEM — neon left bar + slide-glow on hover
+   Add class "lesson-item" to lesson link elements
+   ═══════════════════════════════════════════════════════════ */
+
+.lesson-item {
+  border-left: 3px solid transparent !important;
+  transition: all 0.22s ease !important;
+}
+.lesson-item:hover {
+  border-left-color: var(--cyber-primary) !important;
+  border-color: rgba(0, 200, 255, 0.38) !important;
+  box-shadow:
+    -3px 0 14px rgba(0, 200, 255, 0.22),
+     4px 0 20px rgba(0, 200, 255, 0.06) !important;
+  transform: translateX(3px);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CYBER BUTTON — neon glow on hover
+   Add class "cyber-btn" to primary action buttons
+   ═══════════════════════════════════════════════════════════ */
+
+.cyber-btn {
+  transition: all 0.22s ease !important;
+}
+.cyber-btn:hover:not(:disabled) {
+  box-shadow: 0 0 18px var(--cyber-primary-glow), 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+}
+.cyber-btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   INPUTS — neon focus ring
+   ═══════════════════════════════════════════════════════════ */
+
+input:focus, textarea:focus, select:focus {
+  box-shadow: 0 0 0 2px var(--cyber-primary-subtle), 0 0 10px rgba(0, 200, 255, 0.20) !important;
+}
+
+html[data-theme="dark"] input,
+html[data-theme="dark"] textarea,
+html[data-theme="dark"] select {
+  background-color: #0A001A !important;
+  color: #E0E0FF !important;
+  border-color: rgba(0, 200, 255, 0.25) !important;
+}
+
+html[data-theme="dark"] input::placeholder,
+html[data-theme="dark"] textarea::placeholder {
+  color: rgba(160, 160, 220, 0.5) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PROGRESS BAR GLOW
+   ═══════════════════════════════════════════════════════════ */
+
+.h-3.rounded-full.bg-violet-600,
+.bg-violet-600.h-3 {
+  box-shadow: 0 0 10px rgba(0, 200, 255, 0.55);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   HERO — scanline texture overlay
+   Add class "cyber-hero" to hero sections
+   ═══════════════════════════════════════════════════════════ */
+
+.cyber-hero {
+  position: relative;
+  overflow: hidden;
+}
+.cyber-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0, 0, 0, 0.018) 3px,
+    rgba(0, 0, 0, 0.018) 4px
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+/* corner brackets on the hero */
+.cyber-corner::before,
+.cyber-corner::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-color: var(--cyber-primary);
+  border-style: solid;
+  pointer-events: none;
+  z-index: 2;
+}
+.cyber-corner::before { top: 0; left: 0; border-width: 2px 0 0 2px; }
+.cyber-corner::after  { bottom: 0; right: 0; border-width: 0 2px 2px 0; }
+
+/* ═══════════════════════════════════════════════════════════
+   ANIMATIONS
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 10px rgba(0, 200, 255, 0.30); }
+  50%       { box-shadow: 0 0 24px rgba(0, 200, 255, 0.65), 0 0 48px rgba(0, 200, 255, 0.20); }
+}
+
+@keyframes flicker {
+  0%, 95%, 100% { opacity: 1; }
+  96%            { opacity: 0.82; }
+  97%            { opacity: 1; }
+  98%            { opacity: 0.88; }
+}
+
+@keyframes scan-down {
+  0%   { transform: translateY(-100%); }
+  100% { transform: translateY(200%); }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SCROLLBAR
+   ═══════════════════════════════════════════════════════════ */
+
+::-webkit-scrollbar          { width: 5px; height: 5px; }
+::-webkit-scrollbar-track    { background: transparent; }
+::-webkit-scrollbar-thumb    { background: rgba(0, 200, 255, 0.35); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0, 200, 255, 0.65); }
+
+/* ═══════════════════════════════════════════════════════════
+   SELECTION HIGHLIGHT
+   ═══════════════════════════════════════════════════════════ */
+
+::selection { background: rgba(0, 200, 255, 0.22); color: inherit; }
+
+/* ═══════════════════════════════════════════════════════════
+   DIVIDERS
+   ═══════════════════════════════════════════════════════════ */
+
+hr { border-color: var(--card-border); }
+
+/* ═══════════════════════════════════════════════════════════
+   UTILITY — Space Mono accent font
+   ═══════════════════════════════════════════════════════════ */
+
+.font-mono { font-family: 'Space Mono', 'Courier New', monospace !important; }

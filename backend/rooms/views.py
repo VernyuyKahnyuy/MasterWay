@@ -1,6 +1,7 @@
 # from django.shortcuts import render
-from rest_framework.generics import ListAPIView, CreateAPIView, RetrieveAPIView
+from rest_framework.generics import ListAPIView, CreateAPIView, RetrieveAPIView, UpdateAPIView
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import PermissionDenied
 from .models import Room
 from .serializers import RoomSerializer
 
@@ -38,4 +39,14 @@ class MyRoomsView(ListAPIView):
             creator = self.request.user
         )
     
-#5. 
+#5. View to update a room (creator only)
+class RoomUpdateView(UpdateAPIView):
+    queryset = Room.objects.all()
+    serializer_class = RoomSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        room = super().get_object()
+        if room.creator != self.request.user:
+            raise PermissionDenied("You are not the creator of this room.")
+        return room

@@ -91,12 +91,18 @@ function ProfilePage() {
             src={profile.profile_picture}
             alt="Profile"
             className="w-20 h-20 rounded-full object-cover ring-4 ring-violet-100"
+            onError={(e) => {
+              e.currentTarget.style.display = "none";
+              e.currentTarget.nextSibling.style.display = "flex";
+            }}
           />
-        ) : (
-          <div className="w-20 h-20 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center text-3xl font-bold ring-4 ring-violet-50">
-            {profile.username?.[0]?.toUpperCase() || "U"}
-          </div>
-        )}
+        ) : null}
+        <div
+          className="w-20 h-20 rounded-full bg-violet-100 text-violet-600 flex items-center justify-center text-3xl font-bold ring-4 ring-violet-50"
+          style={{ display: profile.profile_picture ? "none" : "flex" }}
+        >
+          {profile.username?.[0]?.toUpperCase() || "U"}
+        </div>
         <div>
           <p className="text-xl font-bold text-gray-900">{profile.username}</p>
           <p className="text-sm text-gray-400">Member</p>
@@ -169,7 +175,14 @@ function ProfilePage() {
                 />
               </label>
               {picture && (
-                <span className="text-xs text-gray-400">Ready to upload</span>
+                <div className="flex items-center gap-2">
+                  <img
+                    src={URL.createObjectURL(picture)}
+                    alt="Preview"
+                    className="w-10 h-10 rounded-full object-cover ring-2 ring-violet-200"
+                  />
+                  <span className="text-xs text-gray-400">Ready to upload</span>
+                </div>
               )}
             </div>
           </div>
