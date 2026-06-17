@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'profiles',
     'messaging',
     'accountability',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -174,3 +175,5 @@ GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
 MEDIA_URL = "/media/"
 
 MEDIA_ROOT = BASE_DIR / "media"
+
+CSRF_TRUSTED_ORIGINS = ["https://master-way.vercel.app"]

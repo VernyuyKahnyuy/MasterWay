@@ -7,22 +7,21 @@ const api = axios.create({
   },
 });
 
+console.log("api url:", import.meta.env.VITE_API_URL);
+
 api.interceptors.request.use(
-    (config) => {
+  (config) => {
+    const token = localStorage.getItem("access");
 
-        const token = 
-            localStorage.getItem("access");
-
-        if (token) {
-            config.headers["Authorization"] =
-                `Bearer ${token}`;
-        }
-
-        return config;
-    },
-    (error) => {
-        return Promise.reject(error);
+    if (token) {
+      config.headers["Authorization"] = `Bearer ${token}`;
     }
+
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  },
 );
 
 export default api;
