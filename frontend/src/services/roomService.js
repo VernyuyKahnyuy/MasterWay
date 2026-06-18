@@ -1,11 +1,9 @@
 import api from "./api";
 
 export const getRooms = async () => {
-
-  const response =
-    await api.get("rooms/");
-
-  return response.data;
+  const response = await api.get("rooms/");
+  const data = response.data;
+  return Array.isArray(data) ? data : (data?.results ?? []);
 };
 
 export const getRoom = async (id) => {
@@ -17,11 +15,9 @@ export const getRoom = async (id) => {
 };
 
 export const getMyRooms = async () => {
-  const response = await api.get(
-    "/rooms/my-rooms/"
-  );
-
-  return response.data;
+  const response = await api.get("/rooms/my-rooms/");
+  const data = response.data;
+  return Array.isArray(data) ? data : (data?.results ?? []);
 }
 
 export const updateRoom = async (id, formData) => {

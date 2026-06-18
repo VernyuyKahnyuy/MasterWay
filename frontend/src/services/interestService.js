@@ -9,13 +9,11 @@ async (interest) => {
     return response.data;
 }
 
-export const getInterests =
-    async () => {
-        const response = await api.get(
-            "users/interests/list/"
-        )
-        return response.data;
-    }
+export const getInterests = async () => {
+  const response = await api.get("users/interests/list/");
+  const data = response.data;
+  return Array.isArray(data) ? data : (data?.results ?? []);
+};
 
 export const deleteInterest = 
     async (id) => {

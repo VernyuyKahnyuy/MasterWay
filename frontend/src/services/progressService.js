@@ -10,8 +10,8 @@ export const markLessonComplete = async (lessonId) => {
 
 export const getProgress = async () => {
   const response = await api.get("enrollments/progress/");
-
-  return response.data;
+  const data = response.data;
+  return Array.isArray(data) ? data : (data?.results ?? []);
 };
 
 export const getContinueLearning = async () => {

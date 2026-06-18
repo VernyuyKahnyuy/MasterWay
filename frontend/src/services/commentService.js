@@ -1,12 +1,9 @@
 import api from "./api";
 
 export const getCommentsByRoom = async (roomId) => {
-
-  const response = await api.get(
-    `community/?room=${roomId}`
-  );
-
-  return response.data;
+  const response = await api.get(`community/?room=${roomId}`);
+  const data = response.data;
+  return Array.isArray(data) ? data : (data?.results ?? []);
 };
 
 export const createComment = async (
