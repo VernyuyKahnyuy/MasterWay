@@ -471,6 +471,396 @@ function UsersTab() {
   );
 }
 
+// ── Create tab ───────────────────────────────────────────────────────────────
+
+function SectionBtn({ active, onClick, children }) {
+  return (
+    <button
+      onClick={onClick}
+      className="text-xs px-3.5 py-1.5 font-bold rounded-lg transition-all"
+      style={{
+        fontFamily: "'Rajdhani', sans-serif",
+        letterSpacing: "0.06em",
+        background: active ? "rgba(0,200,255,0.18)" : "transparent",
+        color: active ? "#00C8FF" : "rgba(0,200,255,0.45)",
+        border: `1px solid ${active ? "rgba(0,200,255,0.45)" : "rgba(0,200,255,0.15)"}`,
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
+function AdminField({ label, children }) {
+  return (
+    <div>
+      <label className="block text-xs mb-1 tracking-widest"
+        style={{ fontFamily: "'Space Mono', monospace", color: "rgba(0,200,255,0.55)" }}>
+        {label}
+      </label>
+      {children}
+    </div>
+  );
+}
+
+const fieldStyle = {
+  width: "100%",
+  background: "rgba(0,200,255,0.05)",
+  border: "1px solid rgba(0,200,255,0.2)",
+  color: "white",
+  borderRadius: "0.5rem",
+  padding: "0.5rem 0.75rem",
+  fontSize: "0.875rem",
+  outline: "none",
+};
+
+function SubmitBtn({ loading, done, error, label = "CREATE" }) {
+  const bg = done ? "#22c55e" : error ? "#ef4444" : "#00C8FF";
+  const text = loading ? "SUBMITTING…" : done ? "DONE ✓" : error ? "FAILED ✗" : label;
+  return (
+    <button
+      type="submit"
+      disabled={loading}
+      className="font-bold px-5 py-2 rounded-lg text-sm disabled:opacity-40 transition-all"
+      style={{ background: bg, color: "white", fontFamily: "'Rajdhani', sans-serif", letterSpacing: "0.06em" }}
+    >
+      {text}
+    </button>
+  );
+}
+
+function CreateUserForm() {
+  const [form, setForm] = useState({ username: "", email: "", password: "", role: "learner" });
+  const [status, setStatus] = useState("idle");
+  const [msg, setMsg] = useState("");
+
+  const set = (k) => (e) => setForm((p) => ({ ...p, [k]: e.target.value }));
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setStatus("loading");
+    setMsg("");
+    try {
+      await api.post("/users/register/", form);
+      setStatus("done");
+      setForm({ username: "", email: "", password: "", role: "learner" });
+      setTimeout(() => setStatus("idle"), 3000);
+    } catch (err) {
+      const detail = err.response?.data;
+      setMsg(typeof detail === "string" ? detail : JSON.stringify(detail));
+      setStatus("error");
+      setTimeout(() => setStatus("idle"), 4000);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4 max-w-md">
+      <AdminField label="USERNAME">
+        <input style={fieldStyle} value={form.username} onChange={set("username")} required placeholder="johndoe" />
+      </AdminField>
+      <AdminField label="EMAIL">
+        <input style={fieldStyle} type="email" value={form.email} onChange={set("email")} required placeholder="john@example.com" />
+      </AdminField>
+      <AdminField label="PASSWORD">
+        <input style={fieldStyle} type="password" value={form.password} onChange={set("password")} required placeholder="••••••••" />
+      </AdminField>
+      <AdminField label="ROLE">
+        <select style={fieldStyle} value={form.role} onChange={set("role")}>
+          <option value="learner">Learner</option>
+          <option value="expert">Expert</option>
+        </select>
+      </AdminField>
+      {msg && <p className="text-xs" style={{ color: "#ff6b6b" }}>{msg}</p>}
+      <SubmitBtn loading={status === "loading"} done={status === "done"} error={status === "error"} label="CREATE USER" />
+    </form>
+  );
+}
+
+function CreateRoomForm() {
+  const [form, setForm] = useState({ title: "", description: "" });
+  const [coverFile, setCoverFile] = useState(null);
+  const [status, setStatus] = useState("idle");
+  const [msg, setMsg] = useState("");
+
+  const set = (k) => (e) => setForm((p) => ({ ...p, [k]: e.target.value }));
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setStatus("loading");
+    setMsg("");
+    try {
+      const fd = new FormData();
+      fd.append("title", form.title);
+      fd.append("description", form.description);
+      if (coverFile) fd.append("cover_image", coverFile);
+      await api.post("/rooms/create/", fd, { headers: { "Content-Type": "multipart/form-data" } });
+      setStatus("done");
+      setForm({ title: "", description: "" });
+      setCoverFile(null);
+      setTimeout(() => setStatus("idle"), 3000);
+    } catch (err) {
+      const detail = err.response?.data;
+      setMsg(typeof detail === "string" ? detail : JSON.stringify(detail));
+      setStatus("error");
+      setTimeout(() => setStatus("idle"), 4000);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4 max-w-md">
+      <AdminField label="TITLE">
+        <input style={fieldStyle} value={form.title} onChange={set("title")} required placeholder="Room title" />
+      </AdminField>
+      <AdminField label="DESCRIPTION">
+        <textarea style={{ ...fieldStyle, resize: "none" }} rows={3} value={form.description} onChange={set("description")} placeholder="What is this room about?" />
+      </AdminField>
+      <AdminField label="COVER IMAGE (optional)">
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => setCoverFile(e.target.files[0] ?? null)}
+          className="text-xs"
+          style={{ color: "rgba(0,200,255,0.7)" }}
+        />
+      </AdminField>
+      {msg && <p className="text-xs" style={{ color: "#ff6b6b" }}>{msg}</p>}
+      <SubmitBtn loading={status === "loading"} done={status === "done"} error={status === "error"} label="CREATE ROOM" />
+    </form>
+  );
+}
+
+function CreateLessonForm({ rooms }) {
+  const [form, setForm] = useState({ room: "", title: "", content: "", order: "1" });
+  const [imgFile, setImgFile] = useState(null);
+  const [status, setStatus] = useState("idle");
+  const [msg, setMsg] = useState("");
+
+  const set = (k) => (e) => setForm((p) => ({ ...p, [k]: e.target.value }));
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setStatus("loading");
+    setMsg("");
+    try {
+      const fd = new FormData();
+      fd.append("room", form.room);
+      fd.append("title", form.title);
+      fd.append("content", form.content);
+      fd.append("order", form.order);
+      if (imgFile) fd.append("image", imgFile);
+      await api.post("/lessons/create/", fd, { headers: { "Content-Type": "multipart/form-data" } });
+      setStatus("done");
+      setForm({ room: "", title: "", content: "", order: "1" });
+      setImgFile(null);
+      setTimeout(() => setStatus("idle"), 3000);
+    } catch (err) {
+      const detail = err.response?.data;
+      setMsg(typeof detail === "string" ? detail : JSON.stringify(detail));
+      setStatus("error");
+      setTimeout(() => setStatus("idle"), 4000);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4 max-w-md">
+      <AdminField label="ROOM">
+        <select style={fieldStyle} value={form.room} onChange={set("room")} required>
+          <option value="">— select room —</option>
+          {rooms.map((r) => (
+            <option key={r.id} value={r.id}>{r.title}</option>
+          ))}
+        </select>
+      </AdminField>
+      <AdminField label="TITLE">
+        <input style={fieldStyle} value={form.title} onChange={set("title")} required placeholder="Lesson title" />
+      </AdminField>
+      <AdminField label="CONTENT">
+        <textarea style={{ ...fieldStyle, resize: "vertical" }} rows={5} value={form.content} onChange={set("content")} required placeholder="Lesson content…" />
+      </AdminField>
+      <AdminField label="ORDER">
+        <input style={fieldStyle} type="number" min={1} value={form.order} onChange={set("order")} />
+      </AdminField>
+      <AdminField label="THUMBNAIL (optional)">
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => setImgFile(e.target.files[0] ?? null)}
+          className="text-xs"
+          style={{ color: "rgba(0,200,255,0.7)" }}
+        />
+      </AdminField>
+      {msg && <p className="text-xs" style={{ color: "#ff6b6b" }}>{msg}</p>}
+      <SubmitBtn loading={status === "loading"} done={status === "done"} error={status === "error"} label="CREATE LESSON" />
+    </form>
+  );
+}
+
+function AddInterestForm({ users }) {
+  const [userId, setUserId] = useState("");
+  const [interest, setInterest] = useState("");
+  const [status, setStatus] = useState("idle");
+  const [msg, setMsg] = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setStatus("loading");
+    setMsg("");
+    try {
+      await api.post(`/users/admin/interests/${userId}/`, { interest });
+      setStatus("done");
+      setInterest("");
+      setTimeout(() => setStatus("idle"), 3000);
+    } catch (err) {
+      const detail = err.response?.data?.detail ?? err.response?.data;
+      setMsg(typeof detail === "string" ? detail : JSON.stringify(detail));
+      setStatus("error");
+      setTimeout(() => setStatus("idle"), 4000);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4 max-w-md">
+      <AdminField label="USER">
+        <select style={fieldStyle} value={userId} onChange={(e) => setUserId(e.target.value)} required>
+          <option value="">— select user —</option>
+          {users.map((u) => (
+            <option key={u.id} value={u.id}>{u.username} ({u.email})</option>
+          ))}
+        </select>
+      </AdminField>
+      <AdminField label="INTEREST">
+        <input style={fieldStyle} value={interest} onChange={(e) => setInterest(e.target.value)} required placeholder="e.g. machine learning" />
+      </AdminField>
+      {msg && <p className="text-xs" style={{ color: "#ff6b6b" }}>{msg}</p>}
+      <SubmitBtn loading={status === "loading"} done={status === "done"} error={status === "error"} label="ADD INTEREST" />
+    </form>
+  );
+}
+
+function PostAsUserForm({ users, rooms }) {
+  const [form, setForm] = useState({ userId: "", roomId: "", content: "", type: "comment" });
+  const [status, setStatus] = useState("idle");
+  const [msg, setMsg] = useState("");
+
+  const set = (k) => (e) => setForm((p) => ({ ...p, [k]: e.target.value }));
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setStatus("loading");
+    setMsg("");
+    try {
+      if (form.type === "comment") {
+        await api.post("/community/admin/", { user_id: form.userId, room: form.roomId, text: form.content });
+      } else {
+        await api.post("/accountability/admin/", { user_id: form.userId, room: form.roomId, content: form.content });
+      }
+      setStatus("done");
+      setForm((p) => ({ ...p, content: "" }));
+      setTimeout(() => setStatus("idle"), 3000);
+    } catch (err) {
+      const detail = err.response?.data?.detail ?? err.response?.data;
+      setMsg(typeof detail === "string" ? detail : JSON.stringify(detail));
+      setStatus("error");
+      setTimeout(() => setStatus("idle"), 4000);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4 max-w-md">
+      <AdminField label="POST TYPE">
+        <div className="flex gap-2">
+          {["comment", "update"].map((t) => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => setForm((p) => ({ ...p, type: t }))}
+              className="text-xs px-3 py-1.5 rounded-lg font-bold"
+              style={{
+                fontFamily: "'Rajdhani', sans-serif",
+                letterSpacing: "0.06em",
+                background: form.type === t ? "#00C8FF" : "rgba(0,200,255,0.08)",
+                color: form.type === t ? "white" : "rgba(0,200,255,0.6)",
+                border: "1px solid rgba(0,200,255,0.25)",
+              }}
+            >
+              {t === "comment" ? "💬 COMMENT" : "🔥 STUDY UPDATE"}
+            </button>
+          ))}
+        </div>
+      </AdminField>
+      <AdminField label="AS USER">
+        <select style={fieldStyle} value={form.userId} onChange={set("userId")} required>
+          <option value="">— select user —</option>
+          {users.map((u) => (
+            <option key={u.id} value={u.id}>{u.username}</option>
+          ))}
+        </select>
+      </AdminField>
+      <AdminField label="IN ROOM">
+        <select style={fieldStyle} value={form.roomId} onChange={set("roomId")} required>
+          <option value="">— select room —</option>
+          {rooms.map((r) => (
+            <option key={r.id} value={r.id}>{r.title}</option>
+          ))}
+        </select>
+      </AdminField>
+      <AdminField label={form.type === "comment" ? "COMMENT TEXT" : "UPDATE CONTENT"}>
+        <textarea
+          style={{ ...fieldStyle, resize: "vertical" }}
+          rows={4}
+          value={form.content}
+          onChange={set("content")}
+          required
+          placeholder={form.type === "comment" ? "Write a comment…" : "Share a study update…"}
+        />
+      </AdminField>
+      {msg && <p className="text-xs" style={{ color: "#ff6b6b" }}>{msg}</p>}
+      <SubmitBtn loading={status === "loading"} done={status === "done"} error={status === "error"} label={`POST ${form.type.toUpperCase()}`} />
+    </form>
+  );
+}
+
+function CreateTab() {
+  const [section, setSection] = useState("user");
+  const [users, setUsers] = useState([]);
+  const [rooms, setRooms] = useState([]);
+
+  useEffect(() => {
+    api.get("/profiles/admin/users/")
+      .then((r) => setUsers(Array.isArray(r.data) ? r.data : (r.data?.results ?? [])))
+      .catch(console.error);
+    api.get("/rooms/")
+      .then((r) => setRooms(Array.isArray(r.data) ? r.data : (r.data?.results ?? [])))
+      .catch(console.error);
+  }, []);
+
+  const sections = [
+    { id: "user", label: "👤 USER" },
+    { id: "room", label: "🏠 ROOM" },
+    { id: "lesson", label: "📝 LESSON" },
+    { id: "interest", label: "⭐ INTEREST" },
+    { id: "post", label: "💬 POST AS USER" },
+  ];
+
+  return (
+    <>
+      <div className="flex gap-2 mb-6 flex-wrap">
+        {sections.map((s) => (
+          <SectionBtn key={s.id} active={section === s.id} onClick={() => setSection(s.id)}>
+            {s.label}
+          </SectionBtn>
+        ))}
+      </div>
+
+      {section === "user" && <CreateUserForm />}
+      {section === "room" && <CreateRoomForm />}
+      {section === "lesson" && <CreateLessonForm rooms={rooms} />}
+      {section === "interest" && <AddInterestForm users={users} />}
+      {section === "post" && <PostAsUserForm users={users} rooms={rooms} />}
+    </>
+  );
+}
+
 // ── Page ────────────────────────────────────────────────────────────────────
 
 function AdminModePage() {
@@ -503,6 +893,7 @@ function AdminModePage() {
           <TabBtn active={tab === "rooms"} onClick={() => setTab("rooms")}>🏠 ROOMS</TabBtn>
           <TabBtn active={tab === "lessons"} onClick={() => setTab("lessons")}>📝 LESSONS</TabBtn>
           <TabBtn active={tab === "users"} onClick={() => setTab("users")}>👥 USERS</TabBtn>
+          <TabBtn active={tab === "create"} onClick={() => setTab("create")}>⚡ CREATE</TabBtn>
         </div>
 
         {/* Panel */}
@@ -510,11 +901,12 @@ function AdminModePage() {
           style={{ background: "rgba(0,16,32,0.5)", border: "1px solid rgba(0,200,255,0.18)" }}>
           <p className="text-xs tracking-widest mb-5 uppercase"
             style={{ fontFamily: "'Space Mono', monospace", color: "rgba(0,200,255,0.5)" }}>
-            // {tab === "rooms" ? "ALL ROOMS" : tab === "lessons" ? "ALL LESSONS" : "ALL USERS"}
+            // {tab === "rooms" ? "ALL ROOMS" : tab === "lessons" ? "ALL LESSONS" : tab === "users" ? "ALL USERS" : "RAPID CREATION"}
           </p>
           {tab === "rooms" && <RoomsTab />}
           {tab === "lessons" && <LessonsTab />}
           {tab === "users" && <UsersTab />}
+          {tab === "create" && <CreateTab />}
         </div>
       </div>
     </div>

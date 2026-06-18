@@ -7,7 +7,7 @@ from .serializers import (UserInterestSerializer)
 from .serializers import RegisterSerializer
 
 from rest_framework.generics import CreateAPIView, ListAPIView, DestroyAPIView
-from rest_framework.permissions import (IsAuthenticated)
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.views import APIView
 
 from rest_framework.response import Response
@@ -139,6 +139,22 @@ class UserInterestDeleteView(DestroyAPIView):
                 user = self.request.user
             )
         )
+
+
+class AdminInterestCreateView(APIView):
+    """Admin-only: add an interest to any user by user_id."""
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    def post(self, request, user_id):
+        interest_text = request.data.get("interest", "").strip().lower()
+        if not interest_text:
+            return Response({"detail": "Interest is required."}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            target_user = User.objects.get(pk=user_id)
+        except User.DoesNotExist:
+            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        obj = UserInterest.objects.create(user=target_user, interest=interest_text)
+        return Response(UserInterestSerializer(obj).data, status=status.HTTP_201_CREATED)
 
 
 class MeView(APIView):

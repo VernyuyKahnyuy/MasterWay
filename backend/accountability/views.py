@@ -1,9 +1,10 @@
 from datetime import date, timedelta
 
-from rest_framework import generics
-from rest_framework.permissions import IsAuthenticated
+from rest_framework import generics, status
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.contrib.auth import get_user_model
 
 from progress.models import LessonProgress
 from .models import FeedEvent, StudyUpdate
@@ -63,6 +64,25 @@ class GlobalStudyUpdateListView(
 
     def get_queryset(self):
         return StudyUpdate.objects.select_related("user", "room").all()
+
+
+class AdminStudyUpdateCreateView(APIView):
+    """Admin-only: post a study update as any user."""
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    def post(self, request):
+        User = get_user_model()
+        user_id = request.data.get("user_id")
+        room_id = request.data.get("room")
+        content = request.data.get("content", "").strip()
+        if not all([user_id, room_id, content]):
+            return Response({"detail": "user_id, room, and content are required."}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            target_user = User.objects.get(pk=user_id)
+        except User.DoesNotExist:
+            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+        update = StudyUpdate.objects.create(user=target_user, room_id=room_id, content=content)
+        return Response(StudyUpdateSerializer(update).data, status=status.HTTP_201_CREATED)
 
 
 class FeedEventListView(generics.ListAPIView):
