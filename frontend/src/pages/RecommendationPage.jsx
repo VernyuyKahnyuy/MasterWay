@@ -5,15 +5,19 @@ import { getRecommendations } from "../services/recommendationService";
 function RecommendationsPage() {
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchRecommendations = async () => {
       try {
         const data = await getRecommendations();
         setRooms(data.rooms || []);
-      } catch (error) {
-        setRooms([]);
-        console.error(error);
+      } catch (err) {
+        const msg =
+          err.response?.data?.error ??
+          err.response?.data?.detail ??
+          "Recommendations are temporarily unavailable. Please try again later.";
+        setError(msg);
       } finally {
         setLoading(false);
       }
@@ -36,6 +40,19 @@ function RecommendationsPage() {
           {[1, 2, 3].map((i) => (
             <div key={i} className="bg-gray-100 rounded-2xl h-48 animate-pulse" />
           ))}
+        </div>
+      ) : error ? (
+        <div className="rounded-2xl border p-10 text-center"
+          style={{ background: "rgba(239,68,68,0.05)", borderColor: "rgba(239,68,68,0.2)" }}>
+          <p className="text-4xl mb-3">⚠️</p>
+          <h2 className="text-lg font-semibold text-gray-800 mb-2">AI is taking a break</h2>
+          <p className="text-gray-500 max-w-sm mx-auto text-sm">{error}</p>
+          <button
+            onClick={() => { setError(""); setLoading(true); getRecommendations().then(d => setRooms(d.rooms || [])).catch(e => setError(e.response?.data?.error ?? "Still unavailable.")).finally(() => setLoading(false)); }}
+            className="mt-5 inline-block bg-violet-600 hover:bg-violet-700 text-white font-semibold px-5 py-2.5 rounded-lg transition-colors text-sm"
+          >
+            Try again
+          </button>
         </div>
       ) : rooms.length === 0 ? (
         <div className="bg-violet-50 border border-violet-100 rounded-2xl p-10 text-center">

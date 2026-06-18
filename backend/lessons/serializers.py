@@ -11,6 +11,11 @@ class LessonSerializer(serializers.ModelSerializer):
         read_only=True
     )
 
+    room_title = serializers.CharField(
+        source='room.title',
+        read_only=True
+    )
+
     class Meta:
         model = Lesson
         fields = '__all__'

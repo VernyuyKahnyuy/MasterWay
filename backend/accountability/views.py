@@ -79,6 +79,14 @@ class StreakView(APIView):
     def get(self, request):
         user = request.user
 
+        # Admin override takes priority
+        try:
+            override = user.profile.streak_override
+            if override is not None:
+                return Response({"streak": override, "last_active": None})
+        except Exception:
+            pass
+
         progress_dates = set(
             LessonProgress.objects.filter(learner=user)
             .values_list("comleted_at__date", flat=True)

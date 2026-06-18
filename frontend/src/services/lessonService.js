@@ -6,6 +6,12 @@ export const getLessonsByRoom = async (roomId) => {
   return Array.isArray(data) ? data : (data?.results ?? []);
 };
 
+export const getAllLessons = async () => {
+  const response = await api.get("lessons/");
+  const data = response.data;
+  return Array.isArray(data) ? data : (data?.results ?? []);
+};
+
 export const getLesson = async (id) => {
   const response = await api.get(`lessons/${id}/`);
   return response.data;

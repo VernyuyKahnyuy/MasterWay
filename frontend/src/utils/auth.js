@@ -21,9 +21,14 @@ export const getCurrentUsername = () => {
     return localStorage.getItem("username") ?? null;
 };
 
+export const getIsAdmin = () => {
+    return localStorage.getItem("is_staff") === "true";
+};
+
 export const logout = () => {
     localStorage.removeItem("access");
     localStorage.removeItem("refresh");
     localStorage.removeItem("username");
+    localStorage.removeItem("is_staff");
     alert("Logged out successfully");
 };

@@ -39,7 +39,7 @@ class MyRoomsView(ListAPIView):
             creator = self.request.user
         )
     
-#5. View to update a room (creator only)
+#5. View to update a room (creator or staff admin)
 class RoomUpdateView(UpdateAPIView):
     queryset = Room.objects.all()
     serializer_class = RoomSerializer
@@ -47,6 +47,6 @@ class RoomUpdateView(UpdateAPIView):
 
     def get_object(self):
         room = super().get_object()
-        if room.creator != self.request.user:
+        if room.creator != self.request.user and not self.request.user.is_staff:
             raise PermissionDenied("You are not the creator of this room.")
         return room

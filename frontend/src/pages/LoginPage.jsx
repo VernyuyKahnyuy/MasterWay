@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { loginUser } from "../services/authService";
+import api from "../services/api";
 
 const CYAN = "#00C8FF";          // neon — for backgrounds only (white text on top)
 const CYAN_TEXT = "var(--cyber-text)"; // accessible — for text on white/light surfaces
@@ -24,6 +25,13 @@ function LoginPage() {
       localStorage.setItem("access", data.access);
       localStorage.setItem("refresh", data.refresh);
       localStorage.setItem("username", username);
+      // Fetch admin status so the navbar can show Admin Mode if applicable
+      try {
+        const me = await api.get("/users/me/");
+        localStorage.setItem("is_staff", me.data.is_staff ? "true" : "false");
+      } catch {
+        localStorage.setItem("is_staff", "false");
+      }
       window.location.href = "/dashboard";
     } catch (err) {
       console.error(err);

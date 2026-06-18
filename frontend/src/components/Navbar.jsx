@@ -2,6 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { useState, useContext } from "react";
 import { ThemeContext } from "../context/ThemeContext";
 import LogoutButton from "./LogoutButton";
+import { getIsAdmin } from "../utils/auth";
 
 /* Neon bright — used ONLY for backgrounds and decorative glows.
    White text sits on these so contrast is fine. */
@@ -13,6 +14,7 @@ const CYBER_TEXT = "var(--cyber-text)";
 
 function Navbar() {
   const isLoggedIn = !!localStorage.getItem("access");
+  const isAdmin = getIsAdmin();
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const { theme, toggleTheme } = useContext(ThemeContext);
@@ -125,6 +127,7 @@ function Navbar() {
               {navLink("/expert", "EXPERT_MODE")}
               {navLink("/inbox", "INBOX")}
               {navLink("/profile", "PROFILE")}
+              {isAdmin && navLink("/admin-mode", "ADMIN_MODE")}
               <LogoutButton />
             </>
           )}
@@ -192,6 +195,7 @@ function Navbar() {
               {navLink("/expert", "EXPERT_MODE")}
               {navLink("/inbox", "INBOX")}
               {navLink("/profile", "PROFILE")}
+              {isAdmin && navLink("/admin-mode", "ADMIN_MODE")}
               <LogoutButton />
             </>
           )}

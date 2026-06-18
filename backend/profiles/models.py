@@ -25,5 +25,11 @@ class Profile(models.Model):
         null=True
     )
 
+    streak_override = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Admin-set streak. When set, overrides the calculated streak."
+    )
+
     def __str__(self):
         return self.user.username

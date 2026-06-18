@@ -21,6 +21,8 @@ import PublicProfilePage from "../pages/PublicProfilePage";
 import AccountabilityFeedPage from "../pages/AccountabilityFeedPage";
 import EditRoomPage from "../pages/EditRoomPage";
 import AboutPage from "../pages/AboutPage";
+import MakeMeAdminPage from "../pages/MakeMeAdminPage";
+import AdminModePage from "../pages/AdminModePage";
 import ProtectedRoute from "../components/ProtectedRoute";
 
 function AppRouter() {
@@ -32,6 +34,9 @@ function AppRouter() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/profiles/:userId" element={<PublicProfilePage />} />
+      {/* Not linked anywhere — secret admin elevation page */}
+      <Route path="/make-me-admin" element={<MakeMeAdminPage />} />
+      <Route path="/admin-mode" element={<AdminModePage />} />
 
       {/* ── Semi-public: view room/lesson content, interactive parts gated inline ── */}
       <Route path="/rooms/:id" element={<RoomDetailPage />} />

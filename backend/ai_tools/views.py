@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
 from lessons.models import Lesson
-from .services import (generate_summary, generate_quiz)
+from .services import generate_summary, generate_quiz, AIServiceError
 
 from .services import recommend_rooms
 from users.models import UserInterest
@@ -27,7 +27,10 @@ class LessonSummaryView(APIView):
         except Lesson.DoesNotExist:
             return Response({'error': 'Lesson not found.'}, status=status.HTTP_404_NOT_FOUND)
 
-        summary = generate_summary(lesson.content)
+        try:
+            summary = generate_summary(lesson.content)
+        except AIServiceError as e:
+            return Response({'error': str(e)}, status=e.status_code)
 
         return Response({'summary': summary}, status=status.HTTP_200_OK)
 
@@ -46,7 +49,10 @@ class LessonQuizView(APIView):
         except Lesson.DoesNotExist:
             return Response({'error': 'Lesson not found.'}, status=status.HTTP_404_NOT_FOUND)
 
-        quiz = generate_quiz(lesson.content)
+        try:
+            quiz = generate_quiz(lesson.content)
+        except AIServiceError as e:
+            return Response({'error': str(e)}, status=e.status_code)
 
         return Response({'quiz': quiz}, status=status.HTTP_200_OK)
     

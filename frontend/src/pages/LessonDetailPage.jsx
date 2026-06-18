@@ -17,6 +17,8 @@ function LessonDetailPage() {
   const [quiz, setQuiz] = useState(null);
   const [loadingSummary, setLoadingSummary] = useState(false);
   const [loadingQuiz, setLoadingQuiz] = useState(false);
+  const [summaryError, setSummaryError] = useState("");
+  const [quizError, setQuizError] = useState("");
   const [marking, setMarking] = useState(false);
 
   useEffect(() => {
@@ -60,13 +62,15 @@ function LessonDetailPage() {
 
   const handleSummary = async () => {
     setLoadingSummary(true);
-    console.log(`[LessonDetailPage] Generating AI summary for lesson ${id}`);
+    setSummaryError("");
     try {
       const data = await generateSummary(id);
       setSummary(data.summary);
-      console.log("[LessonDetailPage] Summary generated successfully");
     } catch (error) {
-      console.error("[LessonDetailPage] Failed to generate summary:", error);
+      setSummaryError(
+        error.response?.data?.error ??
+        "Failed to generate summary. The AI may be busy — please try again in a moment."
+      );
     } finally {
       setLoadingSummary(false);
     }
@@ -74,13 +78,15 @@ function LessonDetailPage() {
 
   const handleQuiz = async () => {
     setLoadingQuiz(true);
-    console.log(`[LessonDetailPage] Generating AI quiz for lesson ${id}`);
+    setQuizError("");
     try {
       const data = await generateQuiz(id);
       setQuiz(data.quiz);
-      console.log("[LessonDetailPage] Quiz generated successfully");
     } catch (error) {
-      console.error("[LessonDetailPage] Failed to generate quiz:", error);
+      setQuizError(
+        error.response?.data?.error ??
+        "Failed to generate quiz. The AI may be busy — please try again in a moment."
+      );
     } finally {
       setLoadingQuiz(false);
     }
@@ -262,6 +268,28 @@ function LessonDetailPage() {
             )}
           </button>
         </div>
+
+        {/* AI error banners */}
+        {summaryError && (
+          <div className="mt-4 flex items-start gap-3 rounded-xl border px-4 py-3 text-sm"
+            style={{ background: "rgba(239,68,68,0.06)", borderColor: "rgba(239,68,68,0.3)", color: "#dc2626" }}>
+            <span className="text-base shrink-0">⚠️</span>
+            <div>
+              <p className="font-semibold mb-0.5">Summary unavailable</p>
+              <p>{summaryError}</p>
+            </div>
+          </div>
+        )}
+        {quizError && (
+          <div className="mt-4 flex items-start gap-3 rounded-xl border px-4 py-3 text-sm"
+            style={{ background: "rgba(239,68,68,0.06)", borderColor: "rgba(239,68,68,0.3)", color: "#dc2626" }}>
+            <span className="text-base shrink-0">⚠️</span>
+            <div>
+              <p className="font-semibold mb-0.5">Quiz unavailable</p>
+              <p>{quizError}</p>
+            </div>
+          </div>
+        )}
 
         {/* Summary Result */}
         {summary && (

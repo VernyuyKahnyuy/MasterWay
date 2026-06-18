@@ -1,12 +1,15 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework import generics
 from collections import defaultdict
+from django.contrib.auth import get_user_model
 
 from users.models import UserInterest
 from .models import Profile
-from .serializers import ProfileSerializer
+from .serializers import AdminUserSerializer, ProfileSerializer
+
+User = get_user_model()
 
 class MyProfileView(APIView):
 
@@ -138,7 +141,22 @@ class SimilarLearnersView(APIView):
             
         return Response(data)
 
-        # return Response(
-        #     serializer.data
-        # )
-    
+
+class AdminUserListView(generics.ListAPIView):
+    """Admin-only: list every user with their profile snapshot."""
+    serializer_class = AdminUserSerializer
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    def get_queryset(self):
+        return User.objects.select_related("profile").order_by("username")
+
+
+class AdminProfileUpdateView(generics.UpdateAPIView):
+    """Admin-only: update any user's profile by user_id."""
+    serializer_class = ProfileSerializer
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    def get_object(self):
+        user_id = self.kwargs["user_id"]
+        profile, _ = Profile.objects.get_or_create(user_id=user_id)
+        return profile

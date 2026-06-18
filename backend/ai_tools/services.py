@@ -8,44 +8,87 @@ client = genai.Client(
     api_key = settings.GEMINI_API_KEY
 )
 
-def generate_summary(text):
 
-    prompt = f"""Summarize the following lesson. 
-    
+class AIServiceError(Exception):
+    """Raised when the Gemini API returns a known error that should reach the user."""
+    def __init__(self, message, status_code=503):
+        super().__init__(message)
+        self.status_code = status_code
+
+
+def _translate_client_error(e: ClientError) -> AIServiceError:
+    text = str(e).lower()
+    code = getattr(e, 'status_code', None) or getattr(e, 'code', None) or 0
+
+    if code == 429 or 'quota' in text or 'rate' in text or 'resource_exhausted' in text:
+        return AIServiceError(
+            "The AI model has reached its usage limit. Please wait a few minutes and try again.",
+            status_code=429,
+        )
+    if code in (503, 502) or 'overloaded' in text or 'unavailable' in text:
+        return AIServiceError(
+            "The AI model is temporarily overloaded. Please try again in a moment.",
+            status_code=503,
+        )
+    if code == 400:
+        return AIServiceError(
+            "The AI couldn't process this content. Try again or try with different content.",
+            status_code=400,
+        )
+    if code == 401 or 'api_key' in text or 'authentication' in text:
+        return AIServiceError(
+            "AI service configuration error. Please contact support.",
+            status_code=503,
+        )
+    return AIServiceError(
+        f"The AI service encountered an unexpected error. Please try again later.",
+        status_code=503,
+    )
+
+def generate_summary(text):
+    prompt = f"""Summarize the following lesson.
+
     Keep it concise.
     Use Bullet Points:
-    
+
     Lesson: {text}
     """
-
-    response = client.models.generate_content(
-        model = "gemini-2.5-flash",
-        contents = prompt
-    )
-    return response.text
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt,
+        )
+        return response.text
+    except ClientError as e:
+        raise _translate_client_error(e)
+    except Exception:
+        raise AIServiceError("The AI service is temporarily unavailable. Please try again later.")
 
 
 def generate_quiz(text):
-    
-    prompt = f"""Generate a quiz based on the following lesson. 
-    
+    prompt = f"""Generate a quiz based on the following lesson.
+
      Rules:
     - Number each question.
     - Questions only.
     - Keep questions concise.
     - Make it MCQ where most suitable.
-     - Provide 4 options for each question.
+    - Provide 4 options for each question.
 
     At the end, provide the correct answer for each question.
-    
+
     Lesson: {text}
     """
-
-    response = client.models.generate_content(
-        model = "gemini-2.5-flash",
-        contents = prompt
-    )
-    return response.text
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt,
+        )
+        return response.text
+    except ClientError as e:
+        raise _translate_client_error(e)
+    except Exception:
+        raise AIServiceError("The AI service is temporarily unavailable. Please try again later.")
 
 
 import re

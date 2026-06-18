@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { getMyRooms } from "../services/roomService";
+import { getMyRooms, getRoom } from "../services/roomService";
 import { createLesson } from "../services/lessonService";
 
 function CreateLessonPage() {
   const [rooms, setRooms] = useState([]);
   const [room, setRoom] = useState("");
+  const [lockedRoom, setLockedRoom] = useState(null); // when ?room is pre-set
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
@@ -18,13 +19,16 @@ function CreateLessonPage() {
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
-    const fetchRooms = async () => {
-      const data = await getMyRooms();
-      setRooms(data);
-      const preselected = searchParams.get("room");
-      if (preselected) setRoom(preselected);
-    };
-    fetchRooms();
+    const preselected = searchParams.get("room");
+    if (preselected) {
+      // Room is already decided — lock it and show the name, skip the dropdown
+      setRoom(preselected);
+      getRoom(preselected)
+        .then((r) => setLockedRoom(r))
+        .catch(() => setLockedRoom({ id: preselected, title: `Room #${preselected}` }));
+    } else {
+      getMyRooms().then(setRooms);
+    }
   }, []);
 
   const handleSubmit = async (e) => {
@@ -74,19 +78,28 @@ function CreateLessonPage() {
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
               Room
             </label>
-            <select
-              value={room}
-              onChange={(e) => setRoom(e.target.value)}
-              className={inputClass}
-              required
-            >
-              <option value="">Select a room</option>
-              {rooms.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {r.title}
-                </option>
-              ))}
-            </select>
+            {lockedRoom ? (
+              // Pre-selected from admin mode — show read-only, no dropdown needed
+              <div className="flex items-center gap-3 px-4 py-3 bg-violet-50 border border-violet-200 rounded-lg">
+                <span className="text-violet-500">🏠</span>
+                <span className="text-gray-900 font-medium">{lockedRoom.title}</span>
+                <span className="ml-auto text-xs text-violet-400">pre-selected</span>
+              </div>
+            ) : (
+              <select
+                value={room}
+                onChange={(e) => setRoom(e.target.value)}
+                className={inputClass}
+                required
+              >
+                <option value="">Select a room</option>
+                {rooms.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.title}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
 
           <div>
