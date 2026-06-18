@@ -16,3 +16,8 @@ export const createUpdate = async (data) => {
   const response = await api.post("/accountability/create/", data);
   return response.data;
 };
+
+export const getStreak = async () => {
+  const response = await api.get("/accountability/streak/");
+  return response.data;
+};

@@ -74,7 +74,7 @@ function AccountabilityFeedPage() {
           </p>
           <div className="space-y-4">
             {updates.map((update) => {
-              const isMe = update.user === currentUserId;
+              const isMe = String(update.user) === String(currentUserId);
               return (
                 <div
                   key={update.id}
@@ -92,16 +92,15 @@ function AccountabilityFeedPage() {
                     <div className="flex-1 min-w-0">
                       {/* Meta row */}
                       <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <Link
-                          to={`/profiles/${update.user}`}
-                          className="font-semibold text-gray-900 hover:text-violet-700 transition-colors text-sm"
-                        >
-                          {update.username}
-                        </Link>
-                        {isMe && (
-                          <span className="text-xs bg-violet-100 text-violet-600 font-semibold px-2 py-0.5 rounded-full">
-                            you
-                          </span>
+                        {isMe ? (
+                          <span className="font-semibold text-violet-700 text-sm">(you)</span>
+                        ) : (
+                          <Link
+                            to={`/profiles/${update.user}`}
+                            className="font-semibold text-gray-900 hover:text-violet-700 transition-colors text-sm"
+                          >
+                            {update.username}
+                          </Link>
                         )}
                         <span className="text-gray-300 text-xs">•</span>
                         <span className="text-xs text-gray-400">

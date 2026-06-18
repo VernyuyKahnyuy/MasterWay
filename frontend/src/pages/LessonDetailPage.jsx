@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { getLesson } from "../services/lessonService";
-import { markLessonComplete } from "../services/progressService";
+import { markLessonComplete, getProgress } from "../services/progressService";
+import { createUpdate } from "../services/accountabilityService";
 import { generateSummary, generateQuiz } from "../services/aiService";
 import { getCurrentUserId } from "../utils/auth";
 import MarkdownText from "../components/MarkdownText";
@@ -22,8 +23,14 @@ function LessonDetailPage() {
     const fetchLesson = async () => {
       console.log(`[LessonDetailPage] Loading lesson ${id}`);
       try {
-        const data = await getLesson(id);
+        const [data, progressList] = await Promise.all([
+          getLesson(id),
+          currentUserId ? getProgress() : Promise.resolve([]),
+        ]);
         setLesson(data);
+        if (progressList.some((p) => String(p.lesson) === String(id))) {
+          setCompleted(true);
+        }
         console.log(`[LessonDetailPage] Loaded lesson: "${data.title}"`);
       } catch (error) {
         console.error("[LessonDetailPage] Failed to load lesson:", error);
@@ -38,6 +45,12 @@ function LessonDetailPage() {
       await markLessonComplete(id);
       setCompleted(true);
       console.log(`[LessonDetailPage] Lesson ${id} marked complete`);
+      if (lesson?.room) {
+        await createUpdate({
+          room: lesson.room,
+          content: `Completed lesson: "${lesson.title}"`,
+        });
+      }
     } catch (error) {
       console.error("[LessonDetailPage] Failed to mark lesson complete:", error);
     } finally {
@@ -272,6 +285,65 @@ function LessonDetailPage() {
           </div>
         )}
       </div>
+
+      {/* Mark Complete — bottom CTA (learners only, logged in) */}
+      {!currentUserId ? (
+        <div
+          className="mt-2 mb-10 rounded-2xl border p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+          style={{ background: "rgba(0,200,255,0.04)", borderColor: "rgba(0,200,255,0.2)" }}
+        >
+          <div>
+            <p className="font-semibold text-gray-800 mb-1">Track your progress</p>
+            <p className="text-sm text-gray-500">Log in to mark this lesson complete and post it to the accountability feed.</p>
+          </div>
+          <div className="flex gap-2 shrink-0">
+            <Link
+              to="/login"
+              className="text-sm font-bold px-5 py-2.5 rounded-xl text-white transition-opacity hover:opacity-90"
+              style={{ background: "#00C8FF", fontFamily: "'Rajdhani', sans-serif", letterSpacing: "0.06em" }}
+            >
+              LOG IN
+            </Link>
+            <Link
+              to="/register"
+              className="text-sm font-bold px-5 py-2.5 rounded-xl border transition-colors hover:bg-gray-50"
+              style={{ color: "var(--cyber-text)", borderColor: "rgba(0,200,255,0.3)", fontFamily: "'Rajdhani', sans-serif", letterSpacing: "0.06em" }}
+            >
+              REGISTER
+            </Link>
+          </div>
+        </div>
+      ) : currentUserId !== lesson.creator && (
+        <div className="mt-2 mb-10 flex flex-col items-center gap-3">
+          {completed ? (
+            <div className="flex items-center gap-2 bg-green-50 border border-green-200 text-green-700 font-semibold px-8 py-4 rounded-2xl text-base">
+              <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+              Lesson Completed
+            </div>
+          ) : (
+            <>
+              <button
+                onClick={handleComplete}
+                disabled={marking}
+                className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-bold px-10 py-4 rounded-2xl shadow transition-colors disabled:opacity-60 text-base"
+              >
+                {marking ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                    Marking complete...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+                    Mark Lesson Complete
+                  </>
+                )}
+              </button>
+              <p className="text-xs text-gray-400">This will appear in the accountability feed and your progress</p>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }

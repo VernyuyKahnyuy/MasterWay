@@ -1,4 +1,7 @@
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { getCurrentUsername } from "../utils/auth";
+import { getStreak } from "../services/accountabilityService";
 
 const actions = [
   {
@@ -25,15 +28,62 @@ const actions = [
 ];
 
 function ExpertDashboardPage() {
+  const username = getCurrentUsername();
+  const [streak, setStreak] = useState(0);
+
+  useEffect(() => {
+    getStreak()
+      .then((d) => setStreak(d.streak ?? 0))
+      .catch(() => {});
+  }, []);
+
   return (
     <div className="px-6 py-8">
       {/* Header */}
       <div className="bg-gradient-to-br from-violet-600 to-violet-800 rounded-2xl p-8 mb-8 text-white">
         <p className="text-violet-300 text-sm font-medium mb-1">Expert Portal</p>
-        <h1 className="text-3xl font-bold mb-2">Welcome back, Expert!</h1>
+        <h1 className="text-3xl font-bold mb-2">
+          Hello{username ? `, ${username}` : ""}!
+        </h1>
         <p className="text-violet-200">
           Manage your rooms, create content, and grow your audience.
         </p>
+      </div>
+
+      {/* Streak Banner */}
+      <div
+        className="rounded-2xl p-5 mb-8 flex items-center justify-between gap-4"
+        style={{
+          background: streak > 0
+            ? "linear-gradient(135deg, #1a0a00 0%, #2d1500 100%)"
+            : "linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%)",
+          border: streak > 0 ? "1px solid rgba(251,146,60,0.4)" : "1px solid #e5e7eb",
+        }}
+      >
+        <div className="flex items-center gap-4">
+          <span className="text-5xl select-none">{streak > 0 ? "🔥" : "💤"}</span>
+          <div>
+            <p
+              className="text-3xl font-bold leading-none"
+              style={{ color: streak > 0 ? "#fb923c" : "#6b7280" }}
+            >
+              {streak} day{streak !== 1 ? "s" : ""}
+            </p>
+            <p className="text-sm mt-1" style={{ color: streak > 0 ? "#fdba74" : "#9ca3af" }}>
+              {streak === 0
+                ? "Post an accountability update today to start your streak!"
+                : streak < 7
+                ? "Keep posting — your students follow your lead."
+                : "🔥 Consistent expert — your students notice."}
+            </p>
+          </div>
+        </div>
+        <div className="text-right shrink-0 hidden sm:block">
+          <p className="text-xs mb-1" style={{ color: streak > 0 ? "#fdba74" : "#9ca3af" }}>Current streak</p>
+          <p className="text-xs font-medium" style={{ color: streak > 0 ? "#fb923c" : "#6b7280" }}>
+            {streak >= 7 ? "10× learner retention" : "7 days = 10× retention"}
+          </p>
+        </div>
       </div>
 
       {/* Quick Actions */}

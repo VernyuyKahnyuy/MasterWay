@@ -23,6 +23,7 @@ function LoginPage() {
       const data = await loginUser(username, password);
       localStorage.setItem("access", data.access);
       localStorage.setItem("refresh", data.refresh);
+      localStorage.setItem("username", username);
       window.location.href = "/dashboard";
     } catch (err) {
       console.error(err);

@@ -150,7 +150,7 @@ function ProfilePage() {
             <textarea
               value={interests}
               onChange={(e) => setInterests(e.target.value)}
-              placeholder="e.g. Python, Machine Learning, Design..."
+              placeholder="e.g. Food Recipes, Machine Learning, Design..."
               rows={3}
               className="w-full border border-gray-200 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none transition"
             />

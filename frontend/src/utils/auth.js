@@ -17,8 +17,13 @@ export const getCurrentUserId = () => {
     }
 };
 
+export const getCurrentUsername = () => {
+    return localStorage.getItem("username") ?? null;
+};
+
 export const logout = () => {
     localStorage.removeItem("access");
     localStorage.removeItem("refresh");
+    localStorage.removeItem("username");
     alert("Logged out successfully");
 };

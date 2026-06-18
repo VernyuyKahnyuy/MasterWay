@@ -2,11 +2,40 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { getLessonsByRoom } from "../services/lessonService";
 import { getRoom } from "../services/roomService";
-import { enrollInRoom } from "../services/enrollmentService";
+import { enrollInRoom, getEnrollments } from "../services/enrollmentService";
 import { getCommentsByRoom, createComment } from "../services/commentService";
 import { formatDate } from "../utils/dateFormatter";
 import { getCurrentUserId } from "../utils/auth";
 import { createUpdate, getRoomUpdates } from "../services/accountabilityService";
+
+function AuthCTA({ action }) {
+  return (
+    <div
+      className="rounded-xl border p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
+      style={{ background: "rgba(0,200,255,0.04)", borderColor: "rgba(0,200,255,0.2)" }}
+    >
+      <p className="text-sm text-gray-500">
+        <span className="font-semibold text-gray-700">Log in</span> to {action}.
+      </p>
+      <div className="flex gap-2 shrink-0">
+        <Link
+          to="/login"
+          className="text-xs font-bold px-4 py-2 rounded-lg text-white transition-opacity hover:opacity-90"
+          style={{ background: "#00C8FF", fontFamily: "'Rajdhani', sans-serif", letterSpacing: "0.06em" }}
+        >
+          LOG IN
+        </Link>
+        <Link
+          to="/register"
+          className="text-xs font-bold px-4 py-2 rounded-lg border transition-colors hover:bg-gray-50"
+          style={{ color: "var(--cyber-text)", borderColor: "rgba(0,200,255,0.3)", fontFamily: "'Rajdhani', sans-serif", letterSpacing: "0.06em" }}
+        >
+          REGISTER
+        </Link>
+      </div>
+    </div>
+  );
+}
 
 function RoomDetailPage() {
   const { id } = useParams();
@@ -28,14 +57,21 @@ function RoomDetailPage() {
       try {
         const roomData = await getRoom(id);
         setRoom(roomData);
-        const [lessonData, commentData, updateData] = await Promise.all([
+        const fetchList = [
           getLessonsByRoom(id),
           getCommentsByRoom(id),
           getRoomUpdates(id),
-        ]);
+        ];
+        if (currentUserId) fetchList.push(getEnrollments());
+        const results = await Promise.all(fetchList);
+        const [lessonData, commentData, updateData] = results;
         setLessons(lessonData);
         setComments(commentData);
         setUpdates(updateData);
+        if (currentUserId) {
+          const enrollments = results[3];
+          setEnrolled(enrollments.some((e) => String(e.room) === String(id)));
+        }
         console.log(`[RoomDetailPage] Loaded ${lessonData.length} lessons, ${commentData.length} comments, ${updateData.length} updates`);
       } catch (error) {
         console.error("[RoomDetailPage] Failed to load room data:", error);
@@ -139,6 +175,14 @@ function RoomDetailPage() {
                 Edit Room
               </Link>
             </div>
+          ) : !currentUserId ? (
+            <Link
+              to="/login"
+              className="shrink-0 font-semibold px-5 py-2.5 rounded-lg transition-opacity hover:opacity-90 text-sm text-white"
+              style={{ background: "#00C8FF", boxShadow: "0 0 12px rgba(0,200,255,0.35)" }}
+            >
+              Log in to Enroll
+            </Link>
           ) : enrolled ? (
             <span className="shrink-0 bg-green-100 text-green-700 text-sm font-semibold px-4 py-2 rounded-lg">
               ✓ Enrolled
@@ -239,24 +283,30 @@ function RoomDetailPage() {
               Accountability Circle
             </h2>
 
-            <div className="bg-gray-50 rounded-xl border border-gray-100 p-4 mb-4">
-              <form onSubmit={handleUpdateSubmit}>
-                <textarea
-                  value={updateContent}
-                  onChange={(e) => setUpdateContent(e.target.value)}
-                  placeholder="Share your learning progress..."
-                  rows={3}
-                  className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none transition"
-                />
-                <button
-                  type="submit"
-                  disabled={postingUpdate || !updateContent.trim()}
-                  className="mt-2 w-full bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium py-2 rounded-lg transition-colors disabled:opacity-50"
-                >
-                  {postingUpdate ? "Posting..." : "Post Update"}
-                </button>
-              </form>
-            </div>
+            {currentUserId ? (
+              <div className="bg-gray-50 rounded-xl border border-gray-100 p-4 mb-4">
+                <form onSubmit={handleUpdateSubmit}>
+                  <textarea
+                    value={updateContent}
+                    onChange={(e) => setUpdateContent(e.target.value)}
+                    placeholder="Share your learning progress..."
+                    rows={3}
+                    className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none transition"
+                  />
+                  <button
+                    type="submit"
+                    disabled={postingUpdate || !updateContent.trim()}
+                    className="mt-2 w-full bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium py-2 rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    {postingUpdate ? "Posting..." : "Post Update"}
+                  </button>
+                </form>
+              </div>
+            ) : (
+              <div className="mb-4">
+                <AuthCTA action="share your learning progress" />
+              </div>
+            )}
 
             {updates.length === 0 ? (
               <p className="text-sm text-gray-400 text-center py-4">
@@ -264,25 +314,32 @@ function RoomDetailPage() {
               </p>
             ) : (
               <div className="space-y-3">
-                {updates.map((update) => (
-                  <div
-                    key={update.id}
-                    className="bg-white rounded-xl border border-gray-100 p-4"
-                  >
-                    <div className="flex items-center justify-between mb-1.5">
-                      <Link
-                        to={`/profiles/${update.user}`}
-                        className="text-sm font-semibold text-violet-700 hover:text-violet-800"
-                      >
-                        {update.username}
-                      </Link>
-                      <span className="text-xs text-gray-400">
-                        {new Date(update.created_at).toLocaleString()}
-                      </span>
+                {updates.map((update) => {
+                  const isMe = String(update.user) === String(currentUserId);
+                  return (
+                    <div
+                      key={update.id}
+                      className={`rounded-xl border p-4 ${isMe ? "bg-violet-50 border-violet-200" : "bg-white border-gray-100"}`}
+                    >
+                      <div className="flex items-center justify-between mb-1.5">
+                        {isMe ? (
+                          <span className="text-sm font-semibold text-violet-700">(you)</span>
+                        ) : (
+                          <Link
+                            to={`/profiles/${update.user}`}
+                            className="text-sm font-semibold text-violet-700 hover:text-violet-800"
+                          >
+                            {update.username}
+                          </Link>
+                        )}
+                        <span className="text-xs text-gray-400">
+                          {new Date(update.created_at).toLocaleString()}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-600">{update.content}</p>
                     </div>
-                    <p className="text-sm text-gray-600">{update.content}</p>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -293,22 +350,28 @@ function RoomDetailPage() {
               Discussion
             </h2>
 
-            <div className="bg-gray-50 rounded-xl border border-gray-100 p-4 mb-4">
-              <textarea
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-                placeholder="Share your thoughts or questions..."
-                rows={3}
-                className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none transition"
-              />
-              <button
-                onClick={handleComment}
-                disabled={postingComment || !commentText.trim()}
-                className="mt-2 w-full bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium py-2 rounded-lg transition-colors disabled:opacity-50"
-              >
-                {postingComment ? "Posting..." : "Post Comment"}
-              </button>
-            </div>
+            {currentUserId ? (
+              <div className="bg-gray-50 rounded-xl border border-gray-100 p-4 mb-4">
+                <textarea
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  placeholder="Share your thoughts or questions..."
+                  rows={3}
+                  className="w-full bg-white border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent resize-none transition"
+                />
+                <button
+                  onClick={handleComment}
+                  disabled={postingComment || !commentText.trim()}
+                  className="mt-2 w-full bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium py-2 rounded-lg transition-colors disabled:opacity-50"
+                >
+                  {postingComment ? "Posting..." : "Post Comment"}
+                </button>
+              </div>
+            ) : (
+              <div className="mb-4">
+                <AuthCTA action="join the discussion" />
+              </div>
+            )}
 
             {comments.length === 0 ? (
               <p className="text-sm text-gray-400 text-center py-4">
@@ -316,25 +379,32 @@ function RoomDetailPage() {
               </p>
             ) : (
               <div className="space-y-3">
-                {comments.map((comment) => (
-                  <div
-                    key={comment.id}
-                    className="bg-white rounded-xl border border-gray-100 p-4"
-                  >
-                    <div className="flex items-center justify-between mb-1.5">
-                      <Link
-                        to={`/profiles/${comment.user}`}
-                        className="text-sm font-semibold text-violet-700 hover:text-violet-800"
-                      >
-                        {comment.username}
-                      </Link>
-                      <span className="text-xs text-gray-400">
-                        {formatDate(comment.created_at)}
-                      </span>
+                {comments.map((comment) => {
+                  const isMe = String(comment.user) === String(currentUserId);
+                  return (
+                    <div
+                      key={comment.id}
+                      className={`rounded-xl border p-4 ${isMe ? "bg-violet-50 border-violet-200" : "bg-white border-gray-100"}`}
+                    >
+                      <div className="flex items-center justify-between mb-1.5">
+                        {isMe ? (
+                          <span className="text-sm font-semibold text-violet-700">(you)</span>
+                        ) : (
+                          <Link
+                            to={`/profiles/${comment.user}`}
+                            className="text-sm font-semibold text-violet-700 hover:text-violet-800"
+                          >
+                            {comment.username}
+                          </Link>
+                        )}
+                        <span className="text-xs text-gray-400">
+                          {formatDate(comment.created_at)}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-600">{comment.text}</p>
                     </div>
-                    <p className="text-sm text-gray-600">{comment.text}</p>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

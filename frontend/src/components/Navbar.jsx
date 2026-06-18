@@ -88,7 +88,7 @@ function Navbar() {
     >
       <div className="flex items-center justify-between px-6 h-16">
         {/* ── Logo ── */}
-        <Link to="/" className="flex items-center gap-2.5 group shrink-0">
+        <Link to="/about" className="flex items-center gap-2.5 group shrink-0">
           {/* badge bg stays neon — white text on it */}
           <span
             className="flex items-center justify-center w-8 h-8 rounded text-white text-xs font-bold"

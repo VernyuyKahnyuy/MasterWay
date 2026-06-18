@@ -54,7 +54,7 @@ function CreateRoomPage() {
             </label>
             <input
               type="text"
-              placeholder="e.g. Introduction to Python"
+              placeholder="e.g. Introduction to cook Ndole"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="w-full border border-gray-200 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition"

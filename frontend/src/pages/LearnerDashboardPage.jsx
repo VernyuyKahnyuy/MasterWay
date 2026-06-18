@@ -2,25 +2,31 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getContinueLearning, getProgress } from "../services/progressService";
 import { getSimilarLearners } from "../services/profileService";
+import { getStreak } from "../services/accountabilityService";
+import { getCurrentUsername } from "../utils/auth";
 
 function LearnerDashboardPage() {
+  const username = getCurrentUsername();
   const [progress, setProgress] = useState([]);
   const [continueLearning, setContinueLearning] = useState(null);
   const [loading, setLoading] = useState(true);
   const [similarLearners, setSimilarLearners] = useState([]);
+  const [streak, setStreak] = useState(0);
 
   useEffect(() => {
     const fetchData = async () => {
       console.log("[LearnerDashboard] Loading dashboard data");
       try {
-        const [data, continueData, learners] = await Promise.all([
+        const [data, continueData, learners, streakData] = await Promise.all([
           getProgress(),
           getContinueLearning(),
           getSimilarLearners(),
+          getStreak(),
         ]);
         setProgress(data);
         setContinueLearning(continueData);
         setSimilarLearners(learners);
+        setStreak(streakData.streak ?? 0);
         console.log(`[LearnerDashboard] Loaded: ${data.length} completed lessons, ${learners.length} similar learners`);
       } catch (error) {
         console.error("[LearnerDashboard] Failed to load dashboard data:", error);
@@ -48,12 +54,14 @@ function LearnerDashboardPage() {
   return (
     <div className="px-6 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">My Dashboard</h1>
+        <h1 className="text-3xl font-bold text-gray-900">
+          Hello{username ? `, ${username}` : ""}!
+        </h1>
         <p className="text-gray-500 mt-1">Track your learning progress</p>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
         <div className="bg-violet-600 text-white rounded-2xl p-5">
           <p className="text-3xl font-bold">{completedLessons}</p>
           <p className="text-violet-200 text-sm mt-1">Lessons Completed</p>
@@ -71,6 +79,50 @@ function LearnerDashboardPage() {
             {totalLessons - completedLessons}
           </p>
           <p className="text-gray-500 text-sm mt-1">Remaining</p>
+        </div>
+      </div>
+
+      {/* Streak Banner */}
+      <div
+        className="rounded-2xl p-5 mb-8 flex items-center justify-between gap-4"
+        style={{
+          background: streak > 0
+            ? "linear-gradient(135deg, #1a0a00 0%, #2d1500 100%)"
+            : "linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%)",
+          border: streak > 0 ? "1px solid rgba(251,146,60,0.4)" : "1px solid #e5e7eb",
+        }}
+      >
+        <div className="flex items-center gap-4">
+          <span className="text-5xl select-none">{streak > 0 ? "🔥" : "💤"}</span>
+          <div>
+            <p
+              className="text-3xl font-bold leading-none"
+              style={{ color: streak > 0 ? "#fb923c" : "#6b7280" }}
+            >
+              {streak} day{streak !== 1 ? "s" : ""}
+            </p>
+            <p className="text-sm mt-1" style={{ color: streak > 0 ? "#fdba74" : "#9ca3af" }}>
+              {streak === 0
+                ? "No streak yet — complete a lesson today to start one!"
+                : streak < 3
+                ? "You're getting started — keep it going!"
+                : streak < 7
+                ? "Building momentum — don't break it now!"
+                : streak < 30
+                ? "🚀 Incredible streak! You're forming a real habit."
+                : "🏆 Legendary — you're in the top tier of learners!"}
+            </p>
+          </div>
+        </div>
+        <div className="text-right shrink-0 hidden sm:block">
+          <p className="text-xs mb-1" style={{ color: streak > 0 ? "#fdba74" : "#9ca3af" }}>
+            Science says:
+          </p>
+          <p className="text-xs font-medium" style={{ color: streak > 0 ? "#fb923c" : "#6b7280" }}>
+            {streak >= 7
+              ? "10× more likely to keep learning"
+              : "Reach 7 days for 10× retention"}
+          </p>
         </div>
       </div>
 

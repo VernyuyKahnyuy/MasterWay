@@ -1,6 +1,11 @@
+from datetime import date, timedelta
+
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
+from progress.models import LessonProgress
 from .models import StudyUpdate
 from .serializers import (
     StudyUpdateSerializer
@@ -60,5 +65,36 @@ class GlobalStudyUpdateListView(
 
     def get_queryset(self):
         return StudyUpdate.objects.select_related("user", "room").all()
-    
+
+
+class StreakView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+
+        progress_dates = set(
+            LessonProgress.objects.filter(learner=user)
+            .values_list("comleted_at__date", flat=True)
+        )
+        update_dates = set(
+            StudyUpdate.objects.filter(user=user)
+            .values_list("created_at__date", flat=True)
+        )
+        active_dates = progress_dates | update_dates
+
+        today = date.today()
+        # if today has activity, count forward from today; otherwise allow 1-day grace
+        start = today if today in active_dates else today - timedelta(days=1)
+
+        streak = 0
+        cursor = start
+        while cursor in active_dates:
+            streak += 1
+            cursor -= timedelta(days=1)
+
+        last_active = max(active_dates) if active_dates else None
+
+        return Response({"streak": streak, "last_active": str(last_active) if last_active else None})
+
     

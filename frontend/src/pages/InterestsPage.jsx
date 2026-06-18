@@ -66,7 +66,7 @@ function InterestsPage() {
             type="text"
             value={interest}
             onChange={(e) => setInterest(e.target.value)}
-            placeholder="e.g. Python, Design, Finance..."
+            placeholder="e.g. Science, Design, Finance..."
             className="flex-1 border border-gray-200 rounded-lg px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition"
           />
           <button
@@ -82,7 +82,11 @@ function InterestsPage() {
       {/* Interests List */}
       {interests.length === 0 ? (
         <div className="bg-gray-50 border border-gray-100 rounded-2xl p-10 text-center">
-          <img src="/img-discover.png" alt="" className="w-28 h-28 mx-auto mb-3 opacity-70 object-contain" />
+          <img
+            src="/img-discover.png"
+            alt=""
+            className="w-28 h-28 mx-auto mb-3 opacity-70 object-contain"
+          />
           <p className="font-medium text-gray-700">No interests yet</p>
           <p className="text-sm text-gray-400 mt-1">
             Add some topics you&apos;d like to learn about.

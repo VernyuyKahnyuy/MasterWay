@@ -131,6 +131,50 @@ function RoomListPage() {
         </Link>
       </div>
 
+      {/* ── Create Room CTA ── */}
+      <div
+        className="relative rounded-xl overflow-hidden mb-8 px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+        style={{
+          background: "linear-gradient(135deg, rgba(0,16,32,0.92) 0%, rgba(0,40,64,0.88) 60%, rgba(0,24,48,0.95) 100%)",
+          border: "1px solid rgba(0,200,255,0.25)",
+          boxShadow: "0 0 24px rgba(0,200,255,0.08)",
+        }}
+      >
+        {/* decorative corner */}
+        <div className="absolute top-0 right-0 w-5 h-5 pointer-events-none" style={{ borderTop: "2px solid rgba(0,200,255,0.5)", borderRight: "2px solid rgba(0,200,255,0.5)" }} />
+        <div className="absolute bottom-0 left-0 w-5 h-5 pointer-events-none" style={{ borderBottom: "2px solid rgba(0,200,255,0.5)", borderLeft: "2px solid rgba(0,200,255,0.5)" }} />
+
+        <div className="flex items-start gap-3">
+          <span className="text-2xl mt-0.5">💡</span>
+          <div>
+            <p
+              className="font-bold text-white mb-0.5"
+              style={{ fontFamily: "'Rajdhani', sans-serif", letterSpacing: "0.05em", fontSize: "1.05rem" }}
+            >
+              Got knowledge to share?
+            </p>
+            <p className="text-sm" style={{ color: "rgba(0,200,255,0.65)" }}>
+              Create a room and reach learners all over the world — share your ideas, teach your craft.
+            </p>
+          </div>
+        </div>
+
+        <Link
+          to="/expert/create-room"
+          onClick={(e) => e.stopPropagation()}
+          className="shrink-0 font-bold px-5 py-2.5 rounded-lg transition-all hover:opacity-90 text-sm whitespace-nowrap"
+          style={{
+            background: "#00C8FF",
+            color: "white",
+            fontFamily: "'Rajdhani', sans-serif",
+            letterSpacing: "0.08em",
+            boxShadow: "0 0 14px rgba(0,200,255,0.35)",
+          }}
+        >
+          + CREATE A ROOM
+        </Link>
+      </div>
+
       {/* ── Rooms ── */}
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -207,7 +251,7 @@ function RoomListPage() {
                         className="font-medium"
                         style={{ color: "var(--cyber-text)" }}
                       >
-                        {room.creator_username}
+                        {String(room.creator) === String(currentUserId) ? "(you)" : room.creator_username}
                       </span>
                     </span>
                     <div className="flex items-center gap-2">
