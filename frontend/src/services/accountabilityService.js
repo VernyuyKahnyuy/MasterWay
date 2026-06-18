@@ -21,3 +21,9 @@ export const getStreak = async () => {
   const response = await api.get("/accountability/streak/");
   return response.data;
 };
+
+export const getFeedEvents = async () => {
+  const response = await api.get("/accountability/events/");
+  const data = response.data;
+  return Array.isArray(data) ? data : (data?.results ?? []);
+};

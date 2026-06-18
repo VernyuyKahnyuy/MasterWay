@@ -6,10 +6,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from progress.models import LessonProgress
-from .models import StudyUpdate
-from .serializers import (
-    StudyUpdateSerializer
-)
+from .models import FeedEvent, StudyUpdate
+from .serializers import FeedEventSerializer, StudyUpdateSerializer
 
 
 class StudyUpdateCreateView(
@@ -65,6 +63,14 @@ class GlobalStudyUpdateListView(
 
     def get_queryset(self):
         return StudyUpdate.objects.select_related("user", "room").all()
+
+
+class FeedEventListView(generics.ListAPIView):
+    serializer_class = FeedEventSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return FeedEvent.objects.select_related('actor', 'actor__profile', 'room').all()
 
 
 class StreakView(APIView):
