@@ -27,7 +27,7 @@ function RoomListPage() {
   const filtered = rooms.filter(
     (r) =>
       r.title.toLowerCase().includes(search.toLowerCase()) ||
-      r.description?.toLowerCase().includes(search.toLowerCase())
+      r.description?.toLowerCase().includes(search.toLowerCase()),
   );
 
   return (
@@ -36,21 +36,29 @@ function RoomListPage() {
       <div
         className="cyber-hero cyber-corner relative rounded-xl p-8 mb-8 overflow-hidden"
         style={{
-          backgroundImage: "linear-gradient(135deg, rgba(0,24,40,0.88) 0%, rgba(0,40,64,0.82) 45%, rgba(0,16,32,0.92) 100%), url('/hero-bg.jpg')",
+          backgroundImage:
+            "linear-gradient(135deg, rgba(0,24,40,0.88) 0%, rgba(0,40,64,0.82) 45%, rgba(0,16,32,0.92) 100%), url('/hero-bg.jpg')",
           backgroundSize: "cover",
           backgroundPosition: "center",
           border: "1px solid rgba(0,200,255,0.30)",
-          boxShadow: "0 0 40px rgba(0,200,255,0.12), inset 0 0 80px rgba(0,200,255,0.04)",
+          boxShadow:
+            "0 0 40px rgba(0,200,255,0.12), inset 0 0 80px rgba(0,200,255,0.04)",
         }}
       >
         {/* corner bracket decorations (top-right and bottom-left) */}
         <div
           className="absolute top-0 right-0 w-6 h-6 pointer-events-none"
-          style={{ borderTop: "2px solid #00C8FF", borderRight: "2px solid #00C8FF" }}
+          style={{
+            borderTop: "2px solid #00C8FF",
+            borderRight: "2px solid #00C8FF",
+          }}
         />
         <div
           className="absolute bottom-0 left-0 w-6 h-6 pointer-events-none"
-          style={{ borderBottom: "2px solid #00C8FF", borderLeft: "2px solid #00C8FF" }}
+          style={{
+            borderBottom: "2px solid #00C8FF",
+            borderLeft: "2px solid #00C8FF",
+          }}
         />
 
         {/* label badge */}
@@ -70,7 +78,8 @@ function RoomListPage() {
             fontFamily: "'Rajdhani', sans-serif",
             letterSpacing: "0.04em",
             color: "#00C8FF",
-            textShadow: "0 0 24px rgba(0,200,255,0.6), 0 0 48px rgba(0,200,255,0.2)",
+            textShadow:
+              "0 0 24px rgba(0,200,255,0.6), 0 0 48px rgba(0,200,255,0.2)",
           }}
         >
           FIND YOUR NEXT
@@ -80,7 +89,10 @@ function RoomListPage() {
 
         <p
           className="mb-6 text-sm"
-          style={{ color: "rgba(0,200,255,0.65)", fontFamily: "'Inter', sans-serif" }}
+          style={{
+            color: "rgba(0,200,255,0.65)",
+            fontFamily: "'Inter', sans-serif",
+          }}
         >
           Explore expert-led rooms, follow lessons, and track your progress.
         </p>
@@ -112,12 +124,19 @@ function RoomListPage() {
       <div className="flex items-center justify-between mb-5">
         <h2
           className="text-xl font-semibold text-gray-900"
-          style={{ fontFamily: "'Rajdhani', sans-serif", letterSpacing: "0.04em" }}
+          style={{
+            fontFamily: "'Rajdhani', sans-serif",
+            letterSpacing: "0.04em",
+          }}
         >
           AVAILABLE ROOMS{" "}
           <span
             className="font-normal text-base"
-            style={{ fontFamily: "'Space Mono', monospace", color: "var(--cyber-text)", fontSize: "0.8rem" }}
+            style={{
+              fontFamily: "'Space Mono', monospace",
+              color: "var(--cyber-text)",
+              fontSize: "0.8rem",
+            }}
           >
             [{filtered.length}]
           </span>
@@ -125,7 +144,11 @@ function RoomListPage() {
         <Link
           to="/recommendations"
           className="text-sm font-medium transition-colors hover:opacity-80"
-          style={{ color: "var(--cyber-text)", fontFamily: "'Rajdhani', sans-serif", letterSpacing: "0.05em" }}
+          style={{
+            color: "var(--cyber-text)",
+            fontFamily: "'Rajdhani', sans-serif",
+            letterSpacing: "0.05em",
+          }}
         >
           VIEW RECOMMENDATIONS →
         </Link>
@@ -135,26 +158,44 @@ function RoomListPage() {
       <div
         className="relative rounded-xl overflow-hidden mb-8 px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
         style={{
-          background: "linear-gradient(135deg, rgba(0,16,32,0.92) 0%, rgba(0,40,64,0.88) 60%, rgba(0,24,48,0.95) 100%)",
+          background:
+            "linear-gradient(135deg, rgba(0,16,32,0.92) 0%, rgba(0,40,64,0.88) 60%, rgba(0,24,48,0.95) 100%)",
           border: "1px solid rgba(0,200,255,0.25)",
           boxShadow: "0 0 24px rgba(0,200,255,0.08)",
         }}
       >
         {/* decorative corner */}
-        <div className="absolute top-0 right-0 w-5 h-5 pointer-events-none" style={{ borderTop: "2px solid rgba(0,200,255,0.5)", borderRight: "2px solid rgba(0,200,255,0.5)" }} />
-        <div className="absolute bottom-0 left-0 w-5 h-5 pointer-events-none" style={{ borderBottom: "2px solid rgba(0,200,255,0.5)", borderLeft: "2px solid rgba(0,200,255,0.5)" }} />
+        <div
+          className="absolute top-0 right-0 w-5 h-5 pointer-events-none"
+          style={{
+            borderTop: "2px solid rgba(0,200,255,0.5)",
+            borderRight: "2px solid rgba(0,200,255,0.5)",
+          }}
+        />
+        <div
+          className="absolute bottom-0 left-0 w-5 h-5 pointer-events-none"
+          style={{
+            borderBottom: "2px solid rgba(0,200,255,0.5)",
+            borderLeft: "2px solid rgba(0,200,255,0.5)",
+          }}
+        />
 
         <div className="flex items-start gap-3">
           <span className="text-2xl mt-0.5">💡</span>
           <div>
             <p
               className="font-bold text-white mb-0.5"
-              style={{ fontFamily: "'Rajdhani', sans-serif", letterSpacing: "0.05em", fontSize: "1.05rem" }}
+              style={{
+                fontFamily: "'Rajdhani', sans-serif",
+                letterSpacing: "0.05em",
+                fontSize: "1.05rem",
+              }}
             >
               Got knowledge to share?
             </p>
             <p className="text-sm" style={{ color: "rgba(0,200,255,0.65)" }}>
-              Create a room and reach learners all over the world — share your ideas, teach your craft.
+              Create a room and reach learners all over the world, share your
+              ideas, teach your craft.
             </p>
           </div>
         </div>
@@ -188,14 +229,23 @@ function RoomListPage() {
         </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-20">
-          <img src="/img-discover.png" alt="" className="w-32 h-32 mx-auto mb-4 opacity-70 object-contain" />
+          <img
+            src="/img-discover.png"
+            alt=""
+            className="w-32 h-32 mx-auto mb-4 opacity-70 object-contain"
+          />
           <p
             className="font-semibold text-gray-900"
-            style={{ fontFamily: "'Rajdhani', sans-serif", letterSpacing: "0.06em" }}
+            style={{
+              fontFamily: "'Rajdhani', sans-serif",
+              letterSpacing: "0.06em",
+            }}
           >
             NO SIGNAL FOUND
           </p>
-          <p className="text-sm mt-1 text-gray-500">Try a different search term</p>
+          <p className="text-sm mt-1 text-gray-500">
+            Try a different search term
+          </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -237,7 +287,10 @@ function RoomListPage() {
                 <div className="p-5">
                   <h3
                     className="font-semibold text-gray-900 group-hover:text-violet-600 transition-colors line-clamp-1"
-                    style={{ fontFamily: "'Rajdhani', sans-serif", letterSpacing: "0.04em" }}
+                    style={{
+                      fontFamily: "'Rajdhani', sans-serif",
+                      letterSpacing: "0.04em",
+                    }}
                   >
                     {room.title}
                   </h3>
@@ -251,7 +304,9 @@ function RoomListPage() {
                         className="font-medium"
                         style={{ color: "var(--cyber-text)" }}
                       >
-                        {String(room.creator) === String(currentUserId) ? "(you)" : room.creator_username}
+                        {String(room.creator) === String(currentUserId)
+                          ? "(you)"
+                          : room.creator_username}
                       </span>
                     </span>
                     <div className="flex items-center gap-2">
